@@ -18,8 +18,7 @@ public:
 
 private:
 	// private functions
-	//int 	_WriteBuffer	(int size, int overhead, int numPixels, int* inputBuffer);
-
+	static char* 	_formatSsid	(char* ssid);
 
 	// private members
 	char*						wirelessDevice;

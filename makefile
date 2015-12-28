@@ -29,17 +29,15 @@ endif
 
 # define specific binaries to create
 APP0 := wdb40
-APP0_SOURCES := src/main.cpp
-APP0_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(APP0_SOURCES:.$(SRCEXT)=.o))
-APP0_TARGET := $(BINDIR)/$(APP0)
+TARGET := $(BINDIR)/$(APP0)
 
 
-all: info $(APP0_TARGET)
+all: info $(TARGET)
 
-$(APP0_TARGET): $(APP0_OBJECTS) 
+$(TARGET): $(OBJECTS) 
 	@mkdir -p $(BINDIR)
 	@echo " Linking..."
-	$(CXX) $^ $(CXXFLAGS) $(LDFLAGS) -o $(APP0_TARGET) $(LIB)
+	$(CXX) $^ $(CXXFLAGS) $(LDFLAGS) -o $(TARGET) $(LIB)
 
 # generic: build any object file required
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
