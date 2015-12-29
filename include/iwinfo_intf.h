@@ -1,10 +1,23 @@
 #ifndef _IWINFO_INTF_H_
 #define _IWINFO_INTF_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <iwinfo.h>
+#include "iwinfo.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#include <module.h>
+
 
 #define IWINFO_DEVICE_NAME				"wlan0"
+#define IWINFO_MAX_STRING_SIZE			256
+
+
 
 class iwInfoIntf : public Module {
 public:
@@ -18,7 +31,7 @@ public:
 
 private:
 	// private functions
-	static char* 	_formatSsid	(char* ssid);
+	void 	_formatSsid				(char* ssid, char *ssidFormatted);
 
 	// private members
 	char*						wirelessDevice;

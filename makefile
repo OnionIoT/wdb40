@@ -43,7 +43,7 @@ $(TARGET): $(OBJECTS)
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
 	@echo "building $@"
-	@echo " $(CXX) $(CXXFLAGS) $(INC) -c -o $@ $<"; $(CXX) $(CXXFLAGS) $(INC) -c -o $@ $<
+	$(CXX) $< $(CXXFLAGS) $(INC) -c -o $@ $(LIB)
 
 clean:
 	@echo " Cleaning..."; 

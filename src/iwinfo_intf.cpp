@@ -6,7 +6,7 @@ iwInfoIntf::iwInfoIntf(char* device)
 	Reset();
 
 	// initialize the device name
-	wirelessDevice 	= new char[255];
+	wirelessDevice 	= new char[IWINFO_MAX_STRING_SIZE];
 	strncpy(wirelessDevice, device, strlen(device) );
 }
 
@@ -46,9 +46,10 @@ int iwInfoIntf::PrintScanList()
 {
 	int 	status;
 
-	int i, x, len;
-	char buf[IWINFO_BUFSIZE];
-	struct iwinfo_scanlist_entry *e;
+	int 	i, x, len;
+	char 	buf[IWINFO_BUFSIZE];
+	char	*eSsid;
+	struct 	iwinfo_scanlist_entry *e;
 
 	// check that iw struct is initialized
 	if (!iw) {
@@ -56,7 +57,7 @@ int iwInfoIntf::PrintScanList()
 	}
 
 	// check for scan success
-	if (iw->scanlist(ifname, buf, &len))
+	if (iw->scanlist(wirelessDevice, buf, &len))
 	{
 		printf("Scanning not possible\n\n");
 		return EXIT_FAILURE;
@@ -67,28 +68,34 @@ int iwInfoIntf::PrintScanList()
 		return EXIT_FAILURE;
 	}
 
+
+	// allocate memory for the formatted SSID
+	eSsid 	= new char[IWINFO_MAX_STRING_SIZE];
+
 	// print the scan results
 	for (i = 0, x = 1; i < len; i += sizeof(struct iwinfo_scanlist_entry), x++)
 	{
-		e = (struct iwinfo_scanlist_entry *) &buf[i];
+		e 		= (struct iwinfo_scanlist_entry *) &buf[i];
+		_formatSsid(e->ssid, eSsid);
 
-		printf("network %02d - SSID: %s\n", x, _formatSsid(e->ssid) );
+		printf("network %02d - SSID: %s\n", x, eSsid);
 	}
 
 
-	return status;
+	// clean-up
+	delete 	eSsid;
+
+	return 	status;
 }
 
-static char * iwInfoIntf::_formatSsid(char *ssid)
+void iwInfoIntf::_formatSsid(char *ssid, char *ssidFormatted)
 {
-	static char buf[IWINFO_ESSID_MAX_SIZE+3];
-
 	if (ssid && ssid[0]) {
-		snprintf(buf, sizeof(buf), "\"%s\"", ssid);
+		//snprintf(ssidFormatted, sizeof(ssid), "\"%s\"", ssid);
+		sprintf(ssidFormatted, "%s", ssid);
 	}
 	else {
-		snprintf(buf, sizeof(buf), "unknown");
+		//snprintf(ssidFormatted, sizeof(ssid),  "unknown");
+		sprintf(ssidFormatted, "hidden");
 	}
-
-	return buf;
 }
