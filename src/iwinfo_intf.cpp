@@ -27,15 +27,15 @@ iwInfoIntf::~iwInfoIntf()
 void iwInfoIntf::Reset()
 {
 	wirelessDevice 		= NULL;
-	bBackendIntialized 	= 0;
+	bBackendInitialized 	= 0;
 }
 
 void iwInfoIntf::ReleaseBackend()
 {
 	// iwinfo cleanup
-	if (bBackendIntialized) {
+	if (bBackendInitialized) {
 		iwinfo_finish();
-		bBackendIntialized = 0;
+		bBackendInitialized = 0;
 	}
 }
 
@@ -53,7 +53,7 @@ int iwInfoIntf::ReadBackend()
 	}
 
 	// iw init success
-	bBackendIntialized 	= 1;
+	bBackendInitialized = 1;
 	return EXIT_SUCCESS;
 }
 

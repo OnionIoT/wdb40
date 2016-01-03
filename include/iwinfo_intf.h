@@ -50,7 +50,7 @@ private:
 	// private members
 	char*						wirelessDevice;
 	const struct iwinfo_ops 	*iw;
-	int 						bBackendIntialized;
+	int 						bBackendInitialized;
 
 	std::vector<networkInfo>	networkList;
 };
