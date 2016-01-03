@@ -6,6 +6,7 @@ networkInfo::networkInfo()
 	Reset();
 }
 
+// constructor with SSID, encryption type, and encryption key
 networkInfo::networkInfo(const char* inputSsid, const char* inputEncryptionKey, int inputEncryptionType)
 {
 	Reset();
@@ -24,6 +25,24 @@ networkInfo::networkInfo(const std::string inputSsid, const std::string inputEnc
 	encryptionType 	= inputEncryptionType;
 }
 
+// constructor with SSID and encryption type
+networkInfo::networkInfo(const char* inputSsid, int inputEncryptionType)
+{
+	Reset();
+
+	ssid 			= std::string(inputSsid);
+	encryptionType 	= inputEncryptionType;
+}
+
+networkInfo::networkInfo(const std::string inputSsid, int inputEncryptionType)
+{
+	Reset();
+
+	ssid 			= inputSsid;
+	encryptionType 	= inputEncryptionType;
+}
+
+// destructor
 networkInfo::~networkInfo() 
 {
 	// nothing for now
@@ -129,14 +148,14 @@ void networkInfo::PrintBasic()
 {
 	std::string 	tmp0, tmp1;
 
-	_Print(1, "Network:         %s", ssid.c_str() );
+	_Print(1, "Network:       %s\n", ssid.c_str() );
 	GetEncryptionTypeString(encryptionType, tmp0, tmp1);
-	_Print(1, "   Encryption:   %s", tmp1.c_str() );
+	_Print(1, "   Encryption:   %s\n", tmp1.c_str() );
 }
 
 void networkInfo::PrintEncryptionKey() 
 {
-	_Print(1, "     Key:        %s", encryptionKey.c_str() );
+	_Print(1, "     Key:        %s\n", encryptionKey.c_str() );
 }
 
 void networkInfo::Print()
@@ -147,12 +166,12 @@ void networkInfo::Print()
 	PrintEncryptionKey();
 
 	GetEncryptionCipherString(encryptionCipher, tmp);
-	_Print(1, "     Cipher:   %s", tmp.c_str() );
+	_Print(1, "     Cipher:   %s\n", tmp.c_str() );
 
 	GetEncryptionSuiteString(encryptionSuite, tmp);
-	_Print(1, "     Suite:   %s", tmp.c_str() );
+	_Print(1, "     Suite:    %s\n", tmp.c_str() );
 
-	_Print(1, "   BSSID:        %s", bssid.c_str() );
+	_Print(1, "   BSSID:        %s\n", bssid.c_str() );
 }
 
 

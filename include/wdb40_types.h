@@ -2,13 +2,12 @@
 #define _WDB40_TYPES_H_
 
 
-#include <string>
-
 #define IWINFO_MAX_STRING_SIZE			256
 
 // encryption types
 typedef enum e_Wdb40NetworkEncryptionType {
-	WDB40_ENCRYPTION_NONE				= 0,
+	WDB40_ENCRYPTION_UNKNOWN 			= 0,
+	WDB40_ENCRYPTION_NONE,
 	WDB40_ENCRYPTION_WEP_OPEN_SHARED,
 	WDB40_ENCRYPTION_WEP_OPEN,
 	WDB40_ENCRYPTION_WEP_SHARED_AUTH,
@@ -39,12 +38,6 @@ typedef enum e_Wdb40NetworkEncryptionSuite {
 	WDB40_NUM_ENCRYPTION_SUITES
 } eWdb40NetworkEncryptionSuite;
 
-
-// functions to return strings from above enums
-void	GetEncryptionTypeString			(int input, std::string &output);
-void	GetEncryptionTypeString			(int input, std::string &output, std::string &detailedOutput);
-void	GetEncryptionCipherString		(int input, std::string &output);
-void	GetEncryptionSuiteString		(int input, std::string &output);
 
 
 #endif // _WDB40_TYPES_H_

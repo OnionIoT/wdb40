@@ -1,8 +1,9 @@
 #ifndef _NETWORK_INFO_H_
 #define _NETWORK_INFO_H_
 
-#include <module.h>
 #include <wdb40_types.h>
+#include <wdb40_utils.h>
+#include <module.h>
 
 #include <string>
 
@@ -11,8 +12,13 @@
 class networkInfo : public Module {
 public:
 	networkInfo 	(void);
+	
 	networkInfo 	(const char* inputSsid, const char* inputEncryptionKey, int inputEncryptionType);
 	networkInfo 	(const std::string inputSsid, const std::string inputEncryptionKey, int inputEncryptionType);
+
+	networkInfo 	(const char* inputSsid, int inputEncryptionType);
+	networkInfo 	(const std::string inputSsid, int inputEncryptionType);
+
 	~networkInfo 	(void);
 
 	void 	Reset					();
