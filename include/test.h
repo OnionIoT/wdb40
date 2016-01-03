@@ -6,6 +6,7 @@
 #include <stdarg.h>
 
 #include <iwinfo_intf.h>
+#include <uci_intf.h>
 #include <network_info.h>
 
 
