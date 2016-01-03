@@ -11,31 +11,48 @@ extern "C" {
 }
 #endif
 
+#include <wdb40_types.h>
 #include <module.h>
+
+#include <network_info.h>
+
+#include <vector>
 
 
 #define IWINFO_DEVICE_NAME				"wlan0"
-#define IWINFO_MAX_STRING_SIZE			256
 
 
 
+// class to perform all iwinfo operations
 class iwInfoIntf : public Module {
 public:
 	iwInfoIntf(char* device = IWINFO_DEVICE_NAME);
 	~iwInfoIntf(void);
 
 	void 	Reset					();
+	void 	ReleaseBackend 			();
 
 	int 	ReadBackend				();
-	int 	PrintScanList			();
+	int 	ProcessScanList			();
+
+	int 	WifiScan 				();
+
+	void 	GetScanListSize			(int &output);
+	int 	GetScanList 			();
+
+	void 	PrintScanList			();
 
 private:
 	// private functions
-	void 	_formatSsid				(char* ssid, char *ssidFormatted);
+	void 	_formatSsid					(char* ssid, char *ssidFormatted);
+	void 	_formatEncryptionType		(struct iwinfo_crypto_entry *c, int &encryptionType);
 
 	// private members
 	char*						wirelessDevice;
 	const struct iwinfo_ops 	*iw;
+	int 						bBackendIntialized;
+
+	std::vector<networkInfo>	networkList;
 };
 
 

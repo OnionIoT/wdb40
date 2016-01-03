@@ -4,15 +4,22 @@
 
 int main(int argc, char **argv)
 {
-	int 		status;
+	int 		status, tmp;
 
 	iwInfoIntf	*iw;
 
 	// initialize the object
 	iw 	= new iwInfoIntf();
 
-	status = iw->ReadBackend();
-	status |= iw->PrintScanList();
+	// do the scan
+	printf("> Scanning for networks...\n");
+	status = iw->WifiScan();
+
+	// print the results
+	iw->GetScanListSize(tmp);
+	printf("> Found %d networks:\n", tmp);
+	iw->PrintScanList();
+
 
 	// cleanup
 	delete iw;
