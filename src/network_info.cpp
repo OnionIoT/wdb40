@@ -42,6 +42,22 @@ networkInfo::networkInfo(const std::string inputSsid, int inputEncryptionType)
 	encryptionType 	= inputEncryptionType;
 }
 
+// constructor with SSID
+networkInfo::networkInfo(const char* inputSsid)
+{
+	Reset();
+
+	ssid 			= std::string(inputSsid);
+}
+
+networkInfo::networkInfo(const std::string inputSsid)
+{
+	Reset();
+
+	ssid 			= inputSsid;
+}
+
+
 // destructor
 networkInfo::~networkInfo() 
 {
@@ -59,7 +75,7 @@ void networkInfo::Reset()
 	encryptionCipher	= WDB40_ENCRYPTION_CIPHER_NONE;
 	encryptionSuite		= WDB40_ENCRYPTION_SUITE_NONE;
 
-	bDisabled 			= 0;
+	bDisabled 			= -1;
 }
 
 
@@ -107,6 +123,16 @@ void networkInfo::SetConfigName(const std::string input)
 }
 
 
+void networkInfo::SetDisabled(int input)
+{
+	bDisabled			= input;
+}
+
+void networkInfo::SetNetworkMode(int input)
+{
+	networkMode			= input;
+}
+
 void networkInfo::SetEncryptionType(int input)
 {
 	encryptionType 		= input;
@@ -127,10 +153,6 @@ void networkInfo::SetEncryptionSuite(int input)
 	encryptionSuite		= input;
 }
 
-void networkInfo::SetDisabled(int input)
-{
-	bDisabled			= input;
-}
 
 
 //// functions to get class members 
@@ -156,6 +178,16 @@ void networkInfo::GetConfigName (std::string &output)
 }
 
 
+void networkInfo::GetDisabled (int &output)
+{
+	output 	= bDisabled;
+}
+
+void networkInfo::GetNetworkMode (int &output)
+{
+	output 	= networkMode;
+}
+
 void networkInfo::GetEncryptionType (int &output)
 {
 	output 	= encryptionType;
@@ -174,11 +206,6 @@ void networkInfo::GetEncryptionCipher (int &output)
 void networkInfo::GetEncryptionSuite (int &output)
 {
 	output 	= encryptionSuite;
-}
-
-void networkInfo::GetDisabled (int &output)
-{
-	output 	= bDisabled;
 }
 
 
@@ -204,6 +231,16 @@ std::string networkInfo::GetConfigName ()
 }
 
 
+int networkInfo::GetDisabled ()
+{
+	return (bDisabled);
+}
+
+int networkInfo::GetNetworkMode ()
+{
+	return (networkMode);
+}
+
 int networkInfo::GetEncryptionType ()
 {
 	return (encryptionType);
@@ -222,11 +259,6 @@ int networkInfo::GetEncryptionCipher ()
 int networkInfo::GetEncryptionSuite ()
 {
 	return (encryptionSuite);
-}
-
-int networkInfo::GetDisabled ()
-{
-	return (bDisabled);
 }
 
 
@@ -261,10 +293,30 @@ void networkInfo::Print()
 	_Print(1, "     Suite:      %s\n", tmp.c_str() );
 
 	_Print(1, "   BSSID:        %s\n", bssid.c_str() );
+	_Print(1, "   Network Mode: %s\n", FormatNetworkMode().c_str() );
 	_Print(1, "   UCI cfg:      %s\n", cfgName.c_str() );
+	_Print(1, "   Disabled:     %d\n", bDisabled );
+
 }
 
 
+//// formatting functions
+std::string networkInfo::FormatNetworkMode() 
+{
+	std::string 	output;
+
+	if (networkMode == WDB40_NETWORK_AP) {
+		output 	= "AP";
+	}
+	else if (networkMode == WDB40_NETWORK_STA) {
+		output 	= "STA";
+	}
+	else {
+		output 	= "Unknown";
+	}
+
+	return output;
+}
 
 
 

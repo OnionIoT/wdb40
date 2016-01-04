@@ -4,6 +4,14 @@
 
 #define IWINFO_MAX_STRING_SIZE			256
 
+// network modes
+typedef enum e_Wdb40NetworkMode {
+	WDB40_NETWORK_MODE_UNKNOWN 	= 0,
+	WDB40_NETWORK_AP,
+	WDB40_NETWORK_STA,
+	WDB40_NUM_NETWORK_MODES
+} eWdb40NetworkMode;
+
 // encryption types
 typedef enum e_Wdb40NetworkEncryptionType {
 	WDB40_ENCRYPTION_UNKNOWN 			= 0,

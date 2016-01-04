@@ -22,6 +22,9 @@ public:
 	networkInfo 	(const char* inputSsid, int inputEncryptionType);
 	networkInfo 	(const std::string inputSsid, int inputEncryptionType);
 
+	networkInfo 	(const char* inputSsid);
+	networkInfo 	(const std::string inputSsid);
+
 	~networkInfo 	(void);
 
 	void 	Reset					();
@@ -38,12 +41,13 @@ public:
 	void 	SetEncryptionKey		(const std::string input);
 	void 	SetConfigName			(const std::string input);
 
+	void 	SetNetworkMode 			(int input);
+	void 	SetDisabled				(int input);
+
 	void 	SetEncryptionType		(int input);
 	void 	SetEncryptionSubtype	(int input);
 	void 	SetEncryptionCipher		(int input);
 	void 	SetEncryptionSuite		(int input);
-
-	void 	SetDisabled				(int input);
 
 
 	// get functions
@@ -52,12 +56,13 @@ public:
 	void 			GetEncryptionKey		(std::string &output);
 	void 			GetConfigName			(std::string &output);
 		
+	void 			GetDisabled 			(int &output);
+	void 			GetNetworkMode 			(int &output);
+
 	void 			GetEncryptionType		(int &output);
 	void 			GetEncryptionSubtype	(int &output);
 	void 			GetEncryptionCipher		(int &output);
 	void 			GetEncryptionSuite		(int &output);
-		
-	void 			GetDisabled 			(int &output);
 
 
 	std::string 	GetSsid					();
@@ -65,13 +70,13 @@ public:
 	std::string 	GetEncryptionKey		();
 	std::string 	GetConfigName			();
 
+	int 		 	GetDisabled 			();
+	int 		 	GetNetworkMode 			();
+
 	int 		 	GetEncryptionType		();
 	int 		 	GetEncryptionSubtype	();
 	int 		 	GetEncryptionCipher		();
 	int 		 	GetEncryptionSuite		();
-
-	int 		 	GetDisabled 			();
-
 
 
 	// print functions
@@ -79,6 +84,8 @@ public:
 	void 			PrintEncryptionKey 		();
 	void 			Print 					();
 
+	// formatting functions
+	std::string 	FormatNetworkMode 		();
 
 private:
 	// private functions
@@ -91,12 +98,13 @@ private:
 	std::string		encryptionKey;
 	std::string 	cfgName;
 
+	int 			bDisabled;
+	int 			networkMode;
+
 	int 			encryptionType;
 	int 			encryptionSubtype;
 	int 			encryptionCipher;
 	int 			encryptionSuite;
-
-	int 			bDisabled;
 
 	
 };
