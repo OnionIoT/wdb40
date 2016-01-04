@@ -23,6 +23,7 @@ void wdb40Tool::Reset()
 }
 
 
+// use iwinfo intf to scan for available networks
 int wdb40Tool::ScanAvailableNetworks()
 {
 	int 	status, tmp;
@@ -38,17 +39,20 @@ int wdb40Tool::ScanAvailableNetworks()
 	status 	|= iw->GetScanList(scanList);
 	_Print(2, ">> Found %d networks\n", scanList.size());
 
+	//_PrintNetworkList(scanList);
+
 	// deallocate the iwinfo object
 	delete 	iw;
 
 	return status;
 }
 
+// use uci intf to read configured networks
 int wdb40Tool::ReadConfigNetworks() 
 {
 	int 	status;
 
-	_Print(1, "> Reading configurated networks...\n");
+	_Print(1, "> Reading configured networks...\n");
 
 	// initialize the object
 	uci 	= new uciIntf();
@@ -72,3 +76,96 @@ int wdb40Tool::ReadConfigNetworks()
 
 	return status;
 }
+
+// compare configured networks against scanned networks
+int wdb40Tool::CheckForConfigNetworks()
+{
+	int 	status, bMatch;
+
+	_Print(1, "> Checking for available configured networks\n");
+
+	// check that the two lists are valid
+	if (scanList.size() == 0) {
+		_Print(1, "> No scanned networks found\n");
+		return EXIT_FAILURE;
+	}
+	if (configList.size() == 0) {
+		_Print(1, "> No configured networks found\n");
+		return EXIT_FAILURE;
+	}
+
+	// loop through the configured network list
+	for (	std::vector<networkInfo>::iterator itConfig = configList.begin(); 
+			itConfig != configList.end(); 
+			itConfig++) 
+	{
+		// check against all scanned networks
+		for (	std::vector<networkInfo>::iterator itScan = scanList.begin(); 
+				itScan != scanList.end(); 
+				itScan++) 
+		{
+			// compare the networks
+			bMatch 	= 0;
+			status 	= _CompareNetworks( (*itConfig), (*itScan), bMatch );
+
+			if (status == EXIT_SUCCESS && bMatch == 1) {
+				// the networks match
+				_Print(1, "> match for network '%s'\n", ((*itConfig).GetSsid()).c_str() );
+			}
+		} // scanList loop
+	} // configList loop
+
+	return EXIT_SUCCESS;
+}
+
+
+
+//// private functions
+void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> networkList)
+{
+	for (	std::vector<networkInfo>::iterator it = networkList.begin(); 
+			it != networkList.end(); 
+			it++
+		) 
+	{
+		(*it).PrintBasic();
+	}
+}
+
+// compare two networks based on SSID and encryption type
+// 	comparison result 		bMatch
+//	different 				0
+//	same 					1
+int wdb40Tool::_CompareNetworks (networkInfo network1, networkInfo network2, int &bMatch)
+{
+	std::string 	ssid1, ssid2;
+
+	// default value
+	bMatch 	= 0;
+
+	// populate the ssid values
+	ssid1 	= network1.GetSsid();
+	ssid2 	= network2.GetSsid();
+
+	// check that both networks have data
+	if 	( 	ssid1.compare(NETWORK_INFO_DEFAULT_NONE) == 0 || 
+			ssid2.compare(NETWORK_INFO_DEFAULT_NONE) == 0
+		)
+	{
+		
+		return 	EXIT_FAILURE;
+	}
+
+	// compare the networks
+	_Print(3, ">> Comparing ssid '%s':%d against ssid '%s':%d\n", ssid1.c_str(), network1.GetEncryptionType(), ssid2.c_str(), network2.GetEncryptionType() );
+	if 	( 	ssid1.compare(ssid2) == 0 &&
+			network1.GetEncryptionType() == network2.GetEncryptionType()
+		)
+	{
+		// ssid and encryption type match, networks are the same
+		bMatch 	= 1;
+	}
+
+	return EXIT_SUCCESS;
+}
+

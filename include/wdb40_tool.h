@@ -21,11 +21,13 @@ public:
 
 	int 	ScanAvailableNetworks		();
 	int 	ReadConfigNetworks			();
+	int 	CheckForConfigNetworks		();
 
 
 private:
 	// private functions
-	
+	void 	_PrintNetworkList				(std::vector<networkInfo> networkList);
+	int 	_CompareNetworks				(networkInfo network1, networkInfo network2, int &bMatch);
 
 	// private members
 	iwInfoIntf	*iw;
