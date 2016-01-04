@@ -31,10 +31,12 @@ public:
 	void 	SetSsid					(const char* input);
 	void 	SetBssid				(const char* input);
 	void 	SetEncryptionKey		(const char* input);
+	void 	SetConfigName			(const char* input);
 
 	void 	SetSsid					(const std::string input);
 	void 	SetBssid				(const std::string input);
 	void 	SetEncryptionKey		(const std::string input);
+	void 	SetConfigName			(const std::string input);
 
 	void 	SetEncryptionType		(int input);
 	void 	SetEncryptionSubtype	(int input);
@@ -48,6 +50,7 @@ public:
 	void 			GetSsid					(std::string &output);
 	void 			GetBssid				(std::string &output);
 	void 			GetEncryptionKey		(std::string &output);
+	void 			GetConfigName			(std::string &output);
 		
 	void 			GetEncryptionType		(int &output);
 	void 			GetEncryptionSubtype	(int &output);
@@ -60,6 +63,7 @@ public:
 	std::string 	GetSsid					();
 	std::string 	GetBssid				();
 	std::string 	GetEncryptionKey		();
+	std::string 	GetConfigName			();
 
 	int 		 	GetEncryptionType		();
 	int 		 	GetEncryptionSubtype	();
@@ -85,6 +89,7 @@ private:
 	std::string		ssid;
 	std::string		bssid;
 	std::string		encryptionKey;
+	std::string 	cfgName;
 
 	int 			encryptionType;
 	int 			encryptionSubtype;

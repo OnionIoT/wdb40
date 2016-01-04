@@ -95,6 +95,7 @@ int uciIntf::ProcessConfigData()
 					// populate wifiNetwork object
 					_formatEncryption(uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_ENCRYPTION), encr);
 					network 	= new networkInfo(uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID), encr);
+					network->SetConfigName(e->name);
 					network->SetVerbosity(1);
 
 					// append to vector class member

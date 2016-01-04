@@ -16,16 +16,22 @@ int main(int argc, char **argv)
 
 	// scan for networks
 	status 	= wdb40->ScanAvailableNetworks();
-	printf("returned %d\n", status);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
 
 	// read configured networks
 	status 	= wdb40->ReadConfigNetworks();
-	printf("returned %d\n", status);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
 
 	// check configured networks against the scanned networks
 	status 	= wdb40->CheckForConfigNetworks();
-	printf("returned %d\n", status);
-	
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
 
 	// cleanup
 	delete wdb40;

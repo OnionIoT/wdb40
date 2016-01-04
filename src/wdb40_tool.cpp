@@ -108,9 +108,12 @@ int wdb40Tool::CheckForConfigNetworks()
 			bMatch 	= 0;
 			status 	= _CompareNetworks( (*itConfig), (*itScan), bMatch );
 
+			// check if the networks match
 			if (status == EXIT_SUCCESS && bMatch == 1) {
-				// the networks match
 				_Print(1, "> match for network '%s'\n", ((*itConfig).GetSsid()).c_str() );
+				(*itConfig).Print();
+
+				// LAZAR : add match to vector of matches
 			}
 		} // scanList loop
 	} // configList loop

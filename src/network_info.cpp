@@ -53,6 +53,7 @@ void networkInfo::Reset()
 	ssid 				= NETWORK_INFO_DEFAULT_NONE;
 	bssid 				= NETWORK_INFO_DEFAULT_NONE;
 	encryptionKey		= NETWORK_INFO_DEFAULT_NONE;
+	cfgName				= NETWORK_INFO_DEFAULT_NONE;
 
 	encryptionType		= WDB40_ENCRYPTION_NONE;
 	encryptionCipher	= WDB40_ENCRYPTION_CIPHER_NONE;
@@ -79,6 +80,11 @@ void networkInfo::SetEncryptionKey(const char* input)
 	encryptionKey 	= std::string(input);
 }
 
+void networkInfo::SetConfigName(const char* input)
+{
+	cfgName 	= std::string(input);
+}
+
 
 void networkInfo::SetSsid(const std::string input)
 {
@@ -93,6 +99,11 @@ void networkInfo::SetBssid(const std::string input)
 void networkInfo::SetEncryptionKey(const std::string input)
 {
 	encryptionKey 	= input;
+}
+
+void networkInfo::SetConfigName(const std::string input)
+{
+	cfgName 	= input;
 }
 
 
@@ -139,6 +150,11 @@ void networkInfo::GetEncryptionKey (std::string &output)
 	output 	= encryptionKey;
 }
 
+void networkInfo::GetConfigName (std::string &output)
+{
+	output 	= cfgName;
+}
+
 
 void networkInfo::GetEncryptionType (int &output)
 {
@@ -180,6 +196,11 @@ std::string networkInfo::GetBssid ()
 std::string networkInfo::GetEncryptionKey ()
 {
 	return (encryptionKey);
+}
+
+std::string networkInfo::GetConfigName ()
+{
+	return (cfgName);
 }
 
 
@@ -234,12 +255,17 @@ void networkInfo::Print()
 	PrintEncryptionKey();
 
 	GetEncryptionCipherString(encryptionCipher, tmp);
-	_Print(1, "     Cipher:   %s\n", tmp.c_str() );
+	_Print(1, "     Cipher:     %s\n", tmp.c_str() );
 
 	GetEncryptionSuiteString(encryptionSuite, tmp);
-	_Print(1, "     Suite:    %s\n", tmp.c_str() );
+	_Print(1, "     Suite:      %s\n", tmp.c_str() );
 
 	_Print(1, "   BSSID:        %s\n", bssid.c_str() );
+	_Print(1, "   UCI cfg:      %s\n", cfgName.c_str() );
 }
+
+
+
+
 
 
