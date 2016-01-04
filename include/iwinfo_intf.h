@@ -38,7 +38,7 @@ public:
 	int 	WifiScan 				();
 
 	void 	GetScanListSize			(int &output);
-	int 	GetScanList 			();
+	int 	GetScanList 			(std::vector<networkInfo> &list);
 
 	void 	PrintScanList			();
 

@@ -131,11 +131,25 @@ int iwInfoIntf::WifiScan()
 	return (status);
 }
 
+
+//// functions related to the scan list
 void iwInfoIntf::GetScanListSize(int &output)
 {
 	output 	= networkList.size();
 }
 
+int iwInfoIntf::GetScanList(std::vector<networkInfo> &list)
+{
+	if (networkList.size() > 0) {
+		list 	= networkList;
+
+		return EXIT_SUCCESS;
+	}
+
+	return EXIT_FAILURE;
+}
+
+//// print function
 void iwInfoIntf::PrintScanList()
 {
 	for (std::vector<networkInfo>::iterator it = networkList.begin(); it != networkList.end(); it++) {
@@ -155,6 +169,7 @@ void iwInfoIntf::_formatSsid(char *ssid, char *ssidFormatted)
 	}
 }
 
+//// formatting functions
 void iwInfoIntf::_formatEncryptionType(struct iwinfo_crypto_entry *c, int &encryptionType)
 {
 	// check if struct is properly initialized
