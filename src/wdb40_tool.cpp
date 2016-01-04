@@ -104,6 +104,11 @@ int wdb40Tool::CheckForConfigNetworks()
 				itScan != scanList.end(); 
 				itScan++) 
 		{
+			// skip AP networks
+			if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_AP ) {
+				continue;
+			}
+
 			// compare the networks
 			bMatch 	= 0;
 			status 	= _CompareNetworks( (*itConfig), (*itScan), bMatch );
