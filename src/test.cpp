@@ -6,48 +6,27 @@ int main(int argc, char **argv)
 {
 	int 		status, tmp;
 
-	iwInfoIntf	*iw;
-	uciIntf 	*uci;
+	wdb40Tool	*wdb40;
 
-	//// TESTING IWINFO INTF
+
+	//// TESTING WDB40 TOOL
 	// initialize the object
-	iw 		= new iwInfoIntf();
+	wdb40 		= new wdb40Tool();
+	wdb40->SetVerbosity(2);
 
-	// do the scan
-	printf("> Scanning for networks...\n");
-	status = iw->WifiScan();
+	// scan for networks
+	status = wdb40->ScanAvailableNetworks();
+	printf("returned %d\n", status);
 
-	// print the results
-	iw->GetScanListSize(tmp);
-	printf("> Found %d networks:\n", tmp);
-	iw->PrintScanList();
-
-	printf("\n");
+	// read configured networks
+	status = wdb40->ReadConfigNetworks();
+	printf("returned %d\n", status);
 
 
-	//// TESTING UCI INTF
-	// initialize the object
-	uci 	= new uciIntf();
-
-	// init
-	printf("> Initializing the uci backend...\n");
-	status = uci->ReadBackend();
-	printf("   result is %d\n", status);
-
-	// do the scan
-	printf("> Reading the wireless configuration...\n");
-	status = uci->ReadWirelessConfig();
-	printf("   result is %d\n", status);
-
-	// print the results
-	printf("> Processing the wireless configuration...\n");
-	status = uci->ProcessConfigData();
-	printf("   result is %d\n", status);
-
+	
 
 	// cleanup
-	delete iw;
-	delete uci;
+	delete wdb40;
 
 	return 0;
 }

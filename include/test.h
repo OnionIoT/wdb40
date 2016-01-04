@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <iwinfo_intf.h>
-#include <uci_intf.h>
+#include <wdb40_tool.h>
 #include <network_info.h>
 
 
