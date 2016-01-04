@@ -37,6 +37,8 @@ public:
 	void 	SetEncryptionCipher		(int input);
 	void 	SetEncryptionSuite		(int input);
 
+	void 	SetDisabled				(int input);
+
 
 	// get functions
 	void 	GetSsid					(std::string &output);
@@ -46,6 +48,8 @@ public:
 	void 	GetEncryptionType		(int &output);
 	void 	GetEncryptionCipher		(int &output);
 	void 	GetEncryptionSuite		(int &output);
+
+	void 	GetDisabled 			(int &output);
 
 
 	// print functions
@@ -66,6 +70,8 @@ private:
 	int 			encryptionType;
 	int 			encryptionCipher;
 	int 			encryptionSuite;
+
+	int 			bDisabled;
 
 	
 };

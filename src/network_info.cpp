@@ -57,6 +57,8 @@ void networkInfo::Reset()
 	encryptionType		= WDB40_ENCRYPTION_NONE;
 	encryptionCipher	= WDB40_ENCRYPTION_CIPHER_NONE;
 	encryptionSuite		= WDB40_ENCRYPTION_SUITE_NONE;
+
+	bDisabled 			= 0;
 }
 
 
@@ -109,6 +111,11 @@ void networkInfo::SetEncryptionSuite(int input)
 	encryptionSuite		= input;
 }
 
+void networkInfo::SetDisabled(int input)
+{
+	bDisabled			= input;
+}
+
 
 //// functions to get class members
 void networkInfo::GetSsid (std::string &output)
@@ -140,6 +147,11 @@ void networkInfo::GetEncryptionCipher (int &output)
 void networkInfo::GetEncryptionSuite (int &output)
 {
 	output 	= encryptionSuite;
+}
+
+void networkInfo::GetDisabled (int &output)
+{
+	output 	= bDisabled;
 }
 
 
