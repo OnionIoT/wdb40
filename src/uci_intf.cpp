@@ -76,9 +76,6 @@ int uciIntf::ProcessConfigData()
 	
 	// ensure that config has been read
 	if (wirelessPtr.target == UCI_TYPE_PACKAGE) {
-		_Print(1, "Type:    %d\n", 		(int)wirelessPtr.target );
-		_Print(1, "Package:  %s\n", 	wirelessPtr.p->e.name );
-		_Print(1, "Sections:  \n");
 		
 		// look through each section
 		uci_foreach_element( &(wirelessPtr.p->sections), e ) {
@@ -105,12 +102,13 @@ int uciIntf::ProcessConfigData()
 
 					// free the memory
 					delete network;
-				}
-			}
-		}
+				} // if WIFI_IFACE
+			} // if UCI_TYPE_SECTION
+
+		} // foreach uci element	
 		
 		status 	=  EXIT_SUCCESS;
-	}
+	} // if UCI_TYPE_PACKAGE
 
 	
 
