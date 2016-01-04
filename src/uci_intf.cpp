@@ -22,9 +22,9 @@ void uciIntf::Reset()
 	bBackendInitialized 	= 0;
 }
 
+// free the uci context
 void uciIntf::ReleaseBackend()
 {
-	// free the uci context
 	if (ctx != NULL && bBackendInitialized == 1) {
 		bBackendInitialized = 0;
 		uci_free_context (ctx);
@@ -32,6 +32,7 @@ void uciIntf::ReleaseBackend()
 }
 
 
+// Allocate the UCI context
 int uciIntf::ReadBackend()
 {
 	int status;
@@ -47,6 +48,7 @@ int uciIntf::ReadBackend()
 	return EXIT_SUCCESS;
 }
 
+// Read the UCI wireless configuration
 int uciIntf::ReadWirelessConfig()
 {
 	int 	status;
@@ -65,9 +67,12 @@ int uciIntf::ProcessConfigData()
 {
 	int 	status = EXIT_FAILURE;
 	
-	struct uci_element 	*e;
-	struct uci_section 	*s;
-	struct uci_option 	*o;
+	struct 	uci_element 	*e;
+	struct 	uci_section 	*s;
+	struct 	uci_option 		*o;
+
+	networkInfo				*network;
+	int 					encr;
 	
 	// ensure that config has been read
 	if (wirelessPtr.target == UCI_TYPE_PACKAGE) {
@@ -83,12 +88,23 @@ int uciIntf::ProcessConfigData()
 
 				// only look at wifi network setup
 				if ( strncmp(s->type, UCI_INTF_WIFI_IFACE, strlen(UCI_INTF_WIFI_IFACE) ) == 0) {
-					// lookup the ssid name
+					// lookup the network info 
 					//o = (ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID);
-					_Print(1, "  section: %s\n", e->name);
+					/*_Print(1, "  section: %s\n", e->name);
 					_Print(1, "    ssid:     %s\n", uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID) );
 					_Print(1, "    encr:     %s\n", uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_ENCRYPTION) );
-					_Print(1, "    disabled: %s\n", uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_DISABLED) );
+					_Print(1, "    disabled: %s\n", uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_DISABLED) );*/
+
+					// populate wifiNetwork object
+					_formatEncryption(uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_ENCRYPTION), encr);
+					network 	= new networkInfo(uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID), encr);
+					network->SetVerbosity(1);
+
+					// append to vector class member
+					networkList.push_back(*network);
+
+					// free the memory
+					delete network;
 				}
 			}
 		}
@@ -100,4 +116,42 @@ int uciIntf::ProcessConfigData()
 
 	return status;
 }
+
+void uciIntf::_formatEncryption(const char* input, int &encryptionType)
+{
+	// default is unknown
+	encryptionType 		= WDB40_ENCRYPTION_UNKNOWN;
+
+	if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_NONE) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_NONE;
+	}
+	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WEP) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_WEP_SHARED_AUTH;
+	}
+	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_WPA;
+	}
+	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA2) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_WPA2;
+	}
+}
+
+
+void uciIntf::GetNetworkListSize(int &output)
+{
+	output 	= networkList.size();
+}
+
+int uciIntf::GetNetworkList(std::vector<networkInfo> &list)
+{
+	if (networkList.size() > 0) {
+		list 	= networkList;
+
+		return EXIT_SUCCESS;
+	}
+
+	return EXIT_FAILURE;
+}
+
+
 

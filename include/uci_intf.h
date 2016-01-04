@@ -25,6 +25,11 @@ extern "C" {
 #define UCI_INTF_WIFI_IFACE_OPT_DISABLED 	"disabled"
 #define UCI_INTF_WIFI_IFACE_OPT_KEY 		"key"
 
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_NONE 	"none"
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WEP 	"wep"
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA 	"psk"
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA2 	"psk2"
+
 // class to perform all iwinfo operations
 class uciIntf : public Module {
 public:
@@ -39,17 +44,23 @@ public:
 	int 	ReadWirelessConfig		();
 	int 	ProcessConfigData		();
 
+	void 	GetNetworkListSize		(int &output);
+	int 	GetNetworkList 			(std::vector<networkInfo> &list);
+
+
 
 
 private:
 	// private functions
-	
+	void 	_formatEncryption 		(const char* input, int &encryptionType);
 
 	// private members
 	struct uci_context 			*ctx;
 	struct uci_ptr 				wirelessPtr;
 
 	int 						bBackendInitialized;
+
+	std::vector<networkInfo>	networkList;
 };
 
 
