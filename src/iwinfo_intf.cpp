@@ -60,9 +60,9 @@ int iwInfoIntf::ReadBackend()
 // function to process the iwinfo scan list
 int iwInfoIntf::ProcessScanList()
 {
-	int 	i, x, len, tmpInt;
+	int 	i, x, len, encrType, encrSubtype;
 	char 	buf[IWINFO_BUFSIZE];
-	char	*tmpChar;
+	char	*ssid;
 
 	struct 	iwinfo_scanlist_entry 	*e;
 	networkInfo						*network;
@@ -86,17 +86,18 @@ int iwInfoIntf::ProcessScanList()
 
 
 	// allocate memory for the char*
-	tmpChar 	= new char[IWINFO_MAX_STRING_SIZE];
+	ssid 	= new char[IWINFO_MAX_STRING_SIZE];
 
 	// print the scan results
 	for (i = 0, x = 1; i < len; i += sizeof(struct iwinfo_scanlist_entry), x++)
 	{
 		e 	= (struct iwinfo_scanlist_entry *) &buf[i];
-		_formatSsid(e->ssid, tmpChar);
-		_formatEncryptionType(&e->crypto, tmpInt);
+		_formatSsid(e->ssid, ssid);
+		_formatEncryptionType(&e->crypto, encrType, encrSubtype);
 
 		// populate wifiNetwork class
-		network 	= new networkInfo(tmpChar, tmpInt);
+		network 	= new networkInfo(ssid, encrType);
+		network->SetEncryptionSubtype(encrSubtype);
 		network->SetVerbosity(1);
 
 		// append to vector class member
@@ -108,7 +109,7 @@ int iwInfoIntf::ProcessScanList()
 
 
 	// clean-up
-	delete 	tmpChar;
+	delete 	ssid;
 
 	return 	EXIT_SUCCESS;
 }
@@ -170,16 +171,18 @@ void iwInfoIntf::_formatSsid(char *ssid, char *ssidFormatted)
 }
 
 //// formatting functions
-void iwInfoIntf::_formatEncryptionType(struct iwinfo_crypto_entry *c, int &encryptionType)
+void iwInfoIntf::_formatEncryptionType(struct iwinfo_crypto_entry *c, int &encryptionType, int &encryptionSubtype)
 {
 	// check if struct is properly initialized
 	if (!c) {
-		encryptionType 	= WDB40_ENCRYPTION_UNKNOWN;
+		encryptionType 		= WDB40_ENCRYPTION_UNKNOWN;
+		encryptionSubtype 	= WDB40_ENCRYPTION_UNKNOWN;
 		return;
 	}
 
 	// default is none
 	encryptionType 		= WDB40_ENCRYPTION_NONE;
+	encryptionSubtype 	= WDB40_ENCRYPTION_NONE;
 
 	// check for encryption
 	if (c->enabled)
@@ -187,18 +190,20 @@ void iwInfoIntf::_formatEncryptionType(struct iwinfo_crypto_entry *c, int &encry
 		/* WEP */
 		if (c->auth_algs && !c->wpa_version)
 		{
+			encryptionType 		= WDB40_ENCRYPTION_WEP;
+
 			if ((c->auth_algs & IWINFO_AUTH_OPEN) &&
 				(c->auth_algs & IWINFO_AUTH_SHARED))
 			{
-				encryptionType 		= WDB40_ENCRYPTION_WEP_OPEN_SHARED;
+				encryptionSubtype	= WDB40_ENCRYPTION_WEP_OPEN_SHARED;
 			}
 			else if (c->auth_algs & IWINFO_AUTH_OPEN)
 			{
-				encryptionType 		= WDB40_ENCRYPTION_WEP_OPEN;
+				encryptionSubtype	= WDB40_ENCRYPTION_WEP_OPEN;
 			}
 			else if (c->auth_algs & IWINFO_AUTH_SHARED)
 			{
-				encryptionType 		= WDB40_ENCRYPTION_WEP_SHARED_AUTH;
+				encryptionSubtype	= WDB40_ENCRYPTION_WEP_SHARED_AUTH;
 			}
 		}
 
@@ -207,15 +212,18 @@ void iwInfoIntf::_formatEncryptionType(struct iwinfo_crypto_entry *c, int &encry
 		{
 			switch (c->wpa_version) {
 				case 3:
-					encryptionType 		= WDB40_ENCRYPTION_WPA_MIXED;
+					encryptionType 		= WDB40_ENCRYPTION_PSK2;
+					encryptionSubtype	= WDB40_ENCRYPTION_WPA_MIXED;
 					break;
 
 				case 2:
-					encryptionType 		= WDB40_ENCRYPTION_WPA2;
+					encryptionType 		= WDB40_ENCRYPTION_PSK2;
+					encryptionSubtype	= WDB40_ENCRYPTION_WPA2;
 					break;
 
 				case 1:
-					encryptionType 		= WDB40_ENCRYPTION_WPA;
+					encryptionType 		= WDB40_ENCRYPTION_PSK;
+					encryptionSubtype	= WDB40_ENCRYPTION_WPA;
 					break;
 			}
 		}

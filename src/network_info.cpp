@@ -50,9 +50,9 @@ networkInfo::~networkInfo()
 
 void networkInfo::Reset()
 {
-	ssid 				= "none";
-	bssid 				= "none";
-	encryptionKey		= "none";
+	ssid 				= NETWORK_INFO_DEFAULT_NONE;
+	bssid 				= NETWORK_INFO_DEFAULT_NONE;
+	encryptionKey		= NETWORK_INFO_DEFAULT_NONE;
 
 	encryptionType		= WDB40_ENCRYPTION_NONE;
 	encryptionCipher	= WDB40_ENCRYPTION_CIPHER_NONE;
@@ -101,6 +101,11 @@ void networkInfo::SetEncryptionType(int input)
 	encryptionType 		= input;
 }
 
+void networkInfo::SetEncryptionSubtype(int input)
+{
+	encryptionSubtype 	= input;
+}
+
 void networkInfo::SetEncryptionCipher(int input)
 {
 	encryptionCipher 	= input;
@@ -117,7 +122,8 @@ void networkInfo::SetDisabled(int input)
 }
 
 
-//// functions to get class members
+//// functions to get class members 
+// through argument
 void networkInfo::GetSsid (std::string &output)
 {
 	output 	= ssid;
@@ -139,6 +145,11 @@ void networkInfo::GetEncryptionType (int &output)
 	output 	= encryptionType;
 }
 
+void networkInfo::GetEncryptionSubtype (int &output)
+{
+	output 	= encryptionSubtype;
+}
+
 void networkInfo::GetEncryptionCipher (int &output)
 {
 	output 	= encryptionCipher;
@@ -155,14 +166,59 @@ void networkInfo::GetDisabled (int &output)
 }
 
 
+// as return value
+std::string networkInfo::GetSsid ()
+{
+	return (ssid);
+}
+
+std::string networkInfo::GetBssid ()
+{
+	return (bssid);
+}
+
+std::string networkInfo::GetEncryptionKey ()
+{
+	return (encryptionKey);
+}
+
+
+int networkInfo::GetEncryptionType ()
+{
+	return (encryptionType);
+}
+
+int networkInfo::GetEncryptionSubtype ()
+{
+	return (encryptionSubtype);
+}
+
+int networkInfo::GetEncryptionCipher ()
+{
+	return (encryptionCipher);
+}
+
+int networkInfo::GetEncryptionSuite ()
+{
+	return (encryptionSuite);
+}
+
+int networkInfo::GetDisabled ()
+{
+	return (bDisabled);
+}
+
+
 //// printing functions
 void networkInfo::PrintBasic()
 {
-	std::string 	tmp0, tmp1;
+	std::string 	encrType, encrSubtype;
+
+	GetEncryptionTypeString(encryptionType, encrType);
+	GetEncryptionSubtypeString(encryptionSubtype, encrSubtype);
 
 	_Print(1, "Network:       %s\n", ssid.c_str() );
-	GetEncryptionTypeString(encryptionType, tmp0, tmp1);
-	_Print(1, "   Encryption:   %s\n", tmp1.c_str() );
+	_Print(1, "   Encryption:   %s (%s)\n", encrType.c_str(), encrSubtype.c_str() );
 }
 
 void networkInfo::PrintEncryptionKey() 

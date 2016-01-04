@@ -124,13 +124,13 @@ void uciIntf::_formatEncryption(const char* input, int &encryptionType)
 		encryptionType 	= WDB40_ENCRYPTION_NONE;
 	}
 	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WEP) == 0 ) {
-		encryptionType 	= WDB40_ENCRYPTION_WEP_SHARED_AUTH;
+		encryptionType 	= WDB40_ENCRYPTION_WEP;
 	}
-	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA) == 0 ) {
-		encryptionType 	= WDB40_ENCRYPTION_WPA;
+	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_PSK) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_PSK;
 	}
-	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA2) == 0 ) {
-		encryptionType 	= WDB40_ENCRYPTION_WPA2;
+	else if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_PSK2) == 0 ) {
+		encryptionType 	= WDB40_ENCRYPTION_PSK2;
 	}
 }
 

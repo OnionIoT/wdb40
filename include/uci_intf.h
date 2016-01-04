@@ -27,8 +27,8 @@ extern "C" {
 
 #define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_NONE 	"none"
 #define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WEP 	"wep"
-#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA 	"psk"
-#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_WPA2 	"psk2"
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_PSK 	"psk"
+#define UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_PSK2 	"psk2"
 
 // class to perform all iwinfo operations
 class uciIntf : public Module {

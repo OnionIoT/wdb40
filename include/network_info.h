@@ -8,6 +8,9 @@
 #include <string>
 
 
+#define NETWORK_INFO_DEFAULT_NONE		"default-none"
+
+
 // class to Store all info related to a network
 class networkInfo : public Module {
 public:
@@ -34,6 +37,7 @@ public:
 	void 	SetEncryptionKey		(const std::string input);
 
 	void 	SetEncryptionType		(int input);
+	void 	SetEncryptionSubtype	(int input);
 	void 	SetEncryptionCipher		(int input);
 	void 	SetEncryptionSuite		(int input);
 
@@ -41,26 +45,41 @@ public:
 
 
 	// get functions
-	void 	GetSsid					(std::string &output);
-	void 	GetBssid				(std::string &output);
-	void 	GetEncryptionKey		(std::string &output);
+	void 			GetSsid					(std::string &output);
+	void 			GetBssid				(std::string &output);
+	void 			GetEncryptionKey		(std::string &output);
+		
+	void 			GetEncryptionType		(int &output);
+	void 			GetEncryptionSubtype	(int &output);
+	void 			GetEncryptionCipher		(int &output);
+	void 			GetEncryptionSuite		(int &output);
+		
+	void 			GetDisabled 			(int &output);
 
-	void 	GetEncryptionType		(int &output);
-	void 	GetEncryptionCipher		(int &output);
-	void 	GetEncryptionSuite		(int &output);
 
-	void 	GetDisabled 			(int &output);
+	std::string 	GetSsid					();
+	std::string 	GetBssid				();
+	std::string 	GetEncryptionKey		();
+
+	int 		 	GetEncryptionType		();
+	int 		 	GetEncryptionSubtype	();
+	int 		 	GetEncryptionCipher		();
+	int 		 	GetEncryptionSuite		();
+
+	int 		 	GetDisabled 			();
+
 
 
 	// print functions
-	void 	PrintBasic				();
-	void 	PrintEncryptionKey 		();
-	void 	Print 					();
+	void 			PrintBasic				();
+	void 			PrintEncryptionKey 		();
+	void 			Print 					();
 
 
 private:
 	// private functions
 	void 	_formatSsid				(char* ssid, char *ssidFormatted);
+	void 	_PrintNetworkList		(std::vector<networkInfo> networkList);
 
 	// private members
 	std::string		ssid;
@@ -68,6 +87,7 @@ private:
 	std::string		encryptionKey;
 
 	int 			encryptionType;
+	int 			encryptionSubtype;
 	int 			encryptionCipher;
 	int 			encryptionSuite;
 

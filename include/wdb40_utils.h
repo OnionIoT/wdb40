@@ -7,7 +7,7 @@
 
 // functions to return strings from encryption enums
 void	GetEncryptionTypeString			(int input, std::string &output);
-void	GetEncryptionTypeString			(int input, std::string &output, std::string &detailedOutput);
+void	GetEncryptionSubtypeString		(int input, std::string &output);
 void	GetEncryptionCipherString		(int input, std::string &output);
 void	GetEncryptionSuiteString		(int input, std::string &output);
 

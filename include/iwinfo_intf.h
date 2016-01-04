@@ -45,7 +45,7 @@ public:
 private:
 	// private functions
 	void 	_formatSsid					(char* ssid, char *ssidFormatted);
-	void 	_formatEncryptionType		(struct iwinfo_crypto_entry *c, int &encryptionType);
+	void 	_formatEncryptionType		(struct iwinfo_crypto_entry *c, int &encryptionType, int &encryptionSubtype);
 
 	// private members
 	char*						wirelessDevice;

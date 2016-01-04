@@ -6,22 +6,13 @@ void GetEncryptionTypeString (int input, std::string &output)
 		case WDB40_ENCRYPTION_UNKNOWN: 
 			output 			= "unknown";
 			break;
-		case WDB40_ENCRYPTION_WEP_OPEN_SHARED: 
+		case WDB40_ENCRYPTION_WEP: 
 			output 			= "wep";
 			break;
-		case WDB40_ENCRYPTION_WEP_OPEN: 
-			output 			= "wep";
-			break;
-		case WDB40_ENCRYPTION_WEP_SHARED_AUTH: 
-			output 			= "wep";
-			break;
-		case WDB40_ENCRYPTION_WPA_MIXED: 
+		case WDB40_ENCRYPTION_PSK2: 
 			output 			= "psk2";
 			break;
-		case WDB40_ENCRYPTION_WPA2: 
-			output 			= "psk2";
-			break;
-		case WDB40_ENCRYPTION_WPA: 
+		case WDB40_ENCRYPTION_PSK: 
 			output 			= "psk";
 			break;
 		case WDB40_ENCRYPTION_NONE:
@@ -31,35 +22,33 @@ void GetEncryptionTypeString (int input, std::string &output)
 	}
 }
 
-void GetEncryptionTypeString (int input, std::string &output, std::string &detailedOutput)
+void GetEncryptionSubtypeString (int input, std::string &output)
 {
-	GetEncryptionTypeString(input, output);
-
 	switch(input) {
 		case WDB40_ENCRYPTION_UNKNOWN: 
-			detailedOutput	= "Unknown";
+			output	= "Unknown";
 			break;
 		case WDB40_ENCRYPTION_WEP_OPEN_SHARED: 
-			detailedOutput 	= "WEP Open/Shared";
+			output 	= "WEP Mixed (Open/Shared)";
 			break;
 		case WDB40_ENCRYPTION_WEP_OPEN: 
-			detailedOutput 	= "WEP Open";
+			output 	= "WEP Open";
 			break;
 		case WDB40_ENCRYPTION_WEP_SHARED_AUTH: 
-			detailedOutput 	= "WEP Shared";
+			output 	= "WEP Shared";
 			break;
 		case WDB40_ENCRYPTION_WPA_MIXED: 
-			detailedOutput 	= "WPA Mixed";
+			output 	= "WPA Mixed";
 			break;
 		case WDB40_ENCRYPTION_WPA2: 
-			detailedOutput 	= "WPA2";
+			output 	= "WPA2";
 			break;
 		case WDB40_ENCRYPTION_WPA: 
-			detailedOutput 	= "WPA";
+			output 	= "WPA";
 			break;
 		case WDB40_ENCRYPTION_NONE:
 		default:
-			detailedOutput 	= "None";
+			output 	= "None";
 			break;
 	}
 }
