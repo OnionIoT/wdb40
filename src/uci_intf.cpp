@@ -78,7 +78,7 @@ int uciIntf::ReadWirelessConfig()
 {
 	int 	status;
 
-	char *config 	= strdup("wireless");
+	char *config 	= strdup(UCI_INTF_WIFI_PACKAGE);
 
 	// lookup the wireless config
 	if ( uci_lookup_ptr(ctx, &wirelessPtr, config, true) != UCI_OK ) {
@@ -118,6 +118,46 @@ int uciIntf::ProcessConfigData()
 
 
 	return status;
+}
+
+//// UCI action functions
+int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int bCommit)
+{
+	int 	status;
+
+	char 			*wifiSection 	= new char[IWINFO_MAX_STRING_SIZE];
+	sprintf(wifiSection, "%s.%s.disabled", UCI_INTF_WIFI_PACKAGE, network->GetConfigName().c_str() );
+
+
+	// lookup the wireless section
+	_Print(1, "> Changing '%s' disabled state to %d\n", wifiSection, bDisable);
+	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
+		return EXIT_FAILURE;
+	}
+
+	// set the disable option
+	if (sectionPtr.target == UCI_TYPE_OPTION) {
+		// set the value
+		sectionPtr.value 	= "0";
+		
+		// set the change
+		if ((uci_set(ctx, &sectionPtr) != UCI_OK) || (sectionPtr.o==NULL || sectionPtr.o->v.string==NULL)) {
+			_Print(1, "> ERROR: uci set command failed!\n");
+			return EXIT_FAILURE;
+        }
+
+        // commit the change
+        if (bCommit == 1) {
+	        if (uci_commit(ctx, &sectionPtr.p, false) != UCI_OK){
+				_Print(1, "> ERROR: uci commit command failed!\n");
+				return EXIT_FAILURE;
+			}
+    	}
+
+        return EXIT_SUCCESS;
+	}
+
+	return EXIT_FAILURE;
 }
 
 
@@ -236,7 +276,6 @@ int uciIntf::_ParseMode(const char* input)
 
 	return output;
 }
-
 
 
 

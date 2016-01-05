@@ -17,6 +17,8 @@ extern "C" {
 #include <network_info.h>
 
 
+#define UCI_INTF_WIFI_PACKAGE 				"wireless"
+
 #define UCI_INTF_WIFI_IFACE 				"wifi-iface"
 #define UCI_INTF_WIFI_IFACE_OPT_SSID 		"ssid"
 #define UCI_INTF_WIFI_IFACE_OPT_MODE 		"mode"
@@ -53,14 +55,14 @@ public:
 	int 	ReadWirelessConfig		();
 	int 	ProcessConfigData		();
 
-	
+	int 	SetWirelessSectionDisable		(networkInfo *network, int bDisable, int bCommit = 0);
 
 
 
 
 private:
 	// private functions
-	int 	_ParseWirelessSection	(struct uci_section *s, const char* sectionName);
+	int 	_ParseWirelessSection			(struct uci_section *s, const char* sectionName);
 
 	int 	_ParseEncryption 		(const char* input);
 	int 	_ParseDisabled			(const char* input);
@@ -71,6 +73,7 @@ private:
 	// private members
 	struct uci_context 			*ctx;
 	struct uci_ptr 				wirelessPtr;
+	struct uci_ptr 				sectionPtr;
 
 	int 						bBackendInitialized;
 
