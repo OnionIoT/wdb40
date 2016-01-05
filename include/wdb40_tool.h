@@ -23,6 +23,9 @@ public:
 	int 	ReadConfigNetworks			();
 	int 	CheckForConfigNetworks		();
 
+	int 	SetApWirelessEnable 		(int bEnable);
+	int 	SetAllStaWirelessEnable		(int bEnable);
+
 
 private:
 	// private functions

@@ -14,22 +14,35 @@ int main(int argc, char **argv)
 	wdb40 		= new wdb40Tool();
 	wdb40->SetVerbosity(2);
 
-	// scan for networks
-	status 	= wdb40->ScanAvailableNetworks();
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-	}
-
 	// read configured networks
 	status 	= wdb40->ReadConfigNetworks();
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
+		return 0;
+	}
+
+	// enable AP wireless
+	status 	= wdb40->SetApWirelessEnable(1);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+		return 0;
+	}
+
+	// disable all STA networks
+
+
+	// scan for networks
+	status 	= wdb40->ScanAvailableNetworks();
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+		return 0;
 	}
 
 	// check configured networks against the scanned networks
 	status 	= wdb40->CheckForConfigNetworks();
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
+		return 0;
 	}
 
 

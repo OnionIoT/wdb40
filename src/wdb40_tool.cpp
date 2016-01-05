@@ -8,6 +8,9 @@ wdb40Tool::wdb40Tool(void)
 wdb40Tool::~wdb40Tool(void)
 {
 	// nothing for now
+	if (uci != NULL) {
+		delete uci;
+	}
 }
 
 
@@ -43,6 +46,7 @@ int wdb40Tool::ScanAvailableNetworks()
 
 	// deallocate the iwinfo object
 	delete 	iw;
+	iw 	= NULL;
 
 	return status;
 }
@@ -72,6 +76,9 @@ int wdb40Tool::ReadConfigNetworks()
 	// return the processed vector of networks
 	uci->GetNetworkList(configList);
 	_Print(2, ">> List has %d networks\n", configList.size() );
+
+	// release the uci context
+	status 	= uci->ReleaseBackend();
 
 
 	return status;
@@ -124,6 +131,46 @@ int wdb40Tool::CheckForConfigNetworks()
 	} // configList loop
 
 	return EXIT_SUCCESS;
+}
+
+
+// enable/disable main AP network
+int wdb40Tool::SetApWirelessEnable(int bEnable)
+{
+	int 	status 		= EXIT_FAILURE;
+	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
+
+	_Print(1, "> Enabling AP Network\n");
+
+	// initialize the uci backend
+	status = uci->ReadBackend();
+
+	// loop through the configured network list
+	for (	std::vector<networkInfo>::iterator itConfig = configList.begin(); 
+			itConfig != configList.end(); 
+			itConfig++) 
+	{
+		if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_AP) {
+			status 	= uci->SetWirelessSectionDisable( &(*itConfig), bDisable, 1);
+			_Print(1, "> SetWirelessSectionDisable returned %d\n", status);
+
+			// finish the loop after the first AP network
+			status 	= EXIT_SUCCESS;
+		}
+	} // configList loop
+
+	// release the uci context
+	status 	= uci->ReleaseBackend();
+
+	return 	status;
+}
+
+// disable all STA networks
+int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
+{
+	int 	status 		= EXIT_FAILURE;
+
+	return 	status;
 }
 
 
