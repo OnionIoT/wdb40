@@ -33,6 +33,7 @@ int wdb40Tool::ScanAvailableNetworks()
 
 	// allocate new iwinfo object
 	iw 		= new iwInfoIntf();
+	iw->SetVerbosity(1);
 
 	// perform the scan
 	_Print(1, "> Scanning for available networks...\n");
@@ -63,22 +64,22 @@ int wdb40Tool::ReadConfigNetworks()
 
 	// initialize the uci backend
 	_Print(2, ">> Initializing the uci backend...\n");
-	status = uci->ReadBackend();
+	status 	= uci->ReadBackend();
 
 	// read the wireless section
 	_Print(2, ">> Reading the wireless configuration...\n");
-	status = uci->ReadWirelessConfig();
+	status 	|= uci->ReadWirelessConfig();
 
 	// process the wireless section
 	_Print(2, ">> Processing the wireless configuration...\n");
-	status = uci->ProcessConfigData();
+	status 	|= uci->ProcessConfigData();
 
 	// return the processed vector of networks
 	uci->GetNetworkList(configList);
 	_Print(2, ">> List has %d networks\n", configList.size() );
 
 	// release the uci context
-	status 	= uci->ReleaseBackend();
+	status 	|= uci->ReleaseBackend();
 
 
 	return status;
@@ -140,27 +141,10 @@ int wdb40Tool::SetApWirelessEnable(int bEnable)
 	int 	status 		= EXIT_FAILURE;
 	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
 
-	_Print(1, "> Enabling AP Network\n");
+	_Print(1, "> %s AP Network\n", (bEnable == 1 ? "Enabling" : "Disabling") );
 
-	// initialize the uci backend
-	status = uci->ReadBackend();
-
-	// loop through the configured network list
-	for (	std::vector<networkInfo>::iterator itConfig = configList.begin(); 
-			itConfig != configList.end(); 
-			itConfig++) 
-	{
-		if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_AP) {
-			status 	= uci->SetWirelessSectionDisable( &(*itConfig), bDisable, 1);
-			_Print(1, "> SetWirelessSectionDisable returned %d\n", status);
-
-			// finish the loop after the first AP network
-			status 	= EXIT_SUCCESS;
-		}
-	} // configList loop
-
-	// release the uci context
-	status 	= uci->ReleaseBackend();
+	// generic traversal of network list
+	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_AP, bDisable);
 
 	return 	status;
 }
@@ -170,7 +154,23 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 {
 	int 	status 		= EXIT_FAILURE;
 
+	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
+
+	_Print(1, "> %s all STA Networks\n", (bEnable == 1 ? "Enabling" : "Disabling") );
+
+	// generic traversal of network list
+	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA, bDisable);
+
 	return 	status;
+}
+
+// reload wireless
+int wdb40Tool::ReloadWifi ()
+{
+	system("/sbin/wifi");
+	sleep(10);
+
+	return EXIT_SUCCESS;
 }
 
 
@@ -223,4 +223,54 @@ int wdb40Tool::_CompareNetworks (networkInfo network1, networkInfo network2, int
 
 	return EXIT_SUCCESS;
 }
+
+// generic function for enabling/disabling wireless network based on configList vector
+int wdb40Tool::_GenericNetworkListTraversal(int mode, int param0)
+{
+	int 	status 		= EXIT_FAILURE;
+
+	// initialize the uci backend
+	status 	= uci->ReadBackend();
+	if (status != EXIT_SUCCESS) {
+		return EXIT_FAILURE;
+	}
+
+	// loop through the configured network list
+	for (	std::vector<networkInfo>::iterator itConfig = configList.begin(); 
+			itConfig != configList.end(); 
+			itConfig++) 
+	{
+		// GENERIC:: perform action based on the mode
+		if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_AP) {
+			// only look for AP wireless network
+			if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_AP) {
+				status 	= uci->SetWirelessSectionDisable( &(*itConfig), param0, 1);
+				_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+
+				// finish the loop after the first AP network
+				break;
+			}
+		}
+		else if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA) {
+			// only look for STA wireless networks
+			if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_STA) {
+				status 	|= uci->SetWirelessSectionDisable( &(*itConfig), param0);
+				_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+			}
+		}
+	} // configList loop
+
+	// GENERIC:: perform post loop action based on the mode
+	if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA) {
+		// disable all STA: need to commit changes
+		status 	|= uci->CommitSectionChanges();
+	}
+
+	// release the uci context
+	status 	|= uci->ReleaseBackend();
+
+	return 	status;
+}
+
+
 

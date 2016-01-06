@@ -29,6 +29,14 @@ int main(int argc, char **argv)
 	}
 
 	// disable all STA networks
+	status 	= wdb40->SetAllStaWirelessEnable(0);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+		return 0;
+	}
+
+	// reload the wifi configuration
+	status 	= wdb40->ReloadWifi();
 
 
 	// scan for networks
