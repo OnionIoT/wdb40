@@ -19,7 +19,8 @@ extern "C" {
 #include <vector>
 
 
-#define IWINFO_DEVICE_NAME				"wlan0"
+//#define IWINFO_DEVICE_NAME				"wlan0"
+#define IWINFO_DEVICE_NAME				"radio0"
 
 
 

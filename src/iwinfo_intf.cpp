@@ -124,7 +124,12 @@ int iwInfoIntf::WifiScan()
 
 	// initialize the backend and process the scan info
 	status	=  ReadBackend();
-	status	|= ProcessScanList();
+	if (status != EXIT_SUCCESS) {
+		_Print(1, "> ERROR: Reading iwinfo backend failed!\n");
+		return EXIT_FAILURE;
+	}
+
+	status	= ProcessScanList();
 
 	// free the backend
 	ReleaseBackend();
