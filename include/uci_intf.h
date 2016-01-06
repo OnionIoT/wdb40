@@ -56,8 +56,7 @@ public:
 	int 	ProcessConfigData		();
 
 	int 	SetWirelessSectionDisable		(networkInfo *network, int bDisable, int bCommit = 0);
-
-
+	int 	CommitSectionChanges	();
 
 
 private:
@@ -69,7 +68,6 @@ private:
 	int 	_ParseMode				(const char* input);
 
 
-
 	// private members
 	struct uci_context 			*ctx;
 	struct uci_ptr 				wirelessPtr;
@@ -78,6 +76,8 @@ private:
 	int 						bBackendInitialized;
 
 	std::vector<networkInfo>	networkList;
+
+
 };
 
 

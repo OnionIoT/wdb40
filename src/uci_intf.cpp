@@ -51,6 +51,7 @@ int uciIntf::ReadBackend()
 	ctx 	= uci_alloc_context();
 
 	if (!ctx) {
+		bBackendInitialized = 0;
 		return EXIT_FAILURE;
 	}
 
@@ -121,16 +122,17 @@ int uciIntf::ProcessConfigData()
 }
 
 //// UCI action functions
+// change the disabled option in a wireless section
 int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int bCommit)
 {
 	int 	status;
 
-	char 			*wifiSection 	= new char[IWINFO_MAX_STRING_SIZE];
+	char 	*wifiSection 	= new char[IWINFO_MAX_STRING_SIZE];
 	sprintf(wifiSection, "%s.%s.disabled", UCI_INTF_WIFI_PACKAGE, network->GetConfigName().c_str() );
 
 
 	// lookup the wireless section
-	_Print(1, "> Changing '%s' disabled state to %d\n", wifiSection, bDisable);
+	_Print(2, ">> Changing '%s' state to %d\n", wifiSection, bDisable);
 	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
 		return EXIT_FAILURE;
 	}
@@ -138,26 +140,48 @@ int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int b
 	// set the disable option
 	if (sectionPtr.target == UCI_TYPE_OPTION) {
 		// set the value
-		sectionPtr.value 	= "0";
+		sectionPtr.value 	= (bDisable == 1 ? "1" : "0");
+
+		status 	= EXIT_SUCCESS;
 		
 		// set the change
 		if ((uci_set(ctx, &sectionPtr) != UCI_OK) || (sectionPtr.o==NULL || sectionPtr.o->v.string==NULL)) {
 			_Print(1, "> ERROR: uci set command failed!\n");
-			return EXIT_FAILURE;
+			status 	= EXIT_FAILURE;
         }
 
         // commit the change
-        if (bCommit == 1) {
-	        if (uci_commit(ctx, &sectionPtr.p, false) != UCI_OK){
-				_Print(1, "> ERROR: uci commit command failed!\n");
-				return EXIT_FAILURE;
-			}
+        if (bCommit == 1 && status == EXIT_SUCCESS) {
+	        status 	= CommitSectionChanges();
     	}
-
-        return EXIT_SUCCESS;
 	}
 
-	return EXIT_FAILURE;
+	// clean-up
+	delete 	wifiSection;
+
+	return 	status;
+}
+
+// commit the changes in a wireless section
+int uciIntf::CommitSectionChanges()
+{
+	// ensure section pointer actually points to something
+	if 	(	!sectionPtr.s &&	//section
+			!sectionPtr.p &&	//package
+			!sectionPtr.o 		//option
+		) 
+	{
+		_Print(1, "> ERROR: uci ptr has no content\n");
+		return EXIT_FAILURE;
+	}
+
+	// commit the change
+	if (uci_commit(ctx, &sectionPtr.p, false) != UCI_OK){
+		_Print(1, "> ERROR: uci commit command failed!\n");
+		return EXIT_FAILURE;
+	}
+
+	return 	EXIT_SUCCESS;
 }
 
 
