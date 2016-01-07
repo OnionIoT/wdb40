@@ -4,6 +4,7 @@ UNAME_S := $(shell uname -s)
 
 # main compiler
 CXX := g++
+CC := gcc
 # CXX := clang --analyze # and comment out the linker last line for sanity
 
 # define the directories
@@ -18,6 +19,7 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -iname "*.$(SRCEXT)" )
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CXXFLAGS := -g # -Wall
+CFLAGS := -g # -Wall
 
 INC := $(shell find $(INCDIR) -maxdepth 1 -type d -exec echo -I {}  \;)
 #LIB := $(LIB) -L$(LIBDIR) -loniondebug -lonioni2c
@@ -31,6 +33,9 @@ endif
 APP0 := wdb40
 TARGET := $(BINDIR)/$(APP0)
 
+# add the C object as well
+OBJECTS += $(BUILDDIR)/blobmsg_intf.o
+
 
 all: info $(TARGET)
 
@@ -39,10 +44,15 @@ $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	$(CXX) $^ $(CXXFLAGS) $(LDFLAGS) -o $(TARGET) $(LIB)
 
+$(BUILDDIR)/blobmsg_intf.o: $(SRCDIR)/blobmsg_intf.c
+	@mkdir -p $(dir $@)
+	@echo " C building $@"
+	$(CC) $< $(CFLAGS) $(INC) -c -o $@ $(LIB)
+
 # generic: build any object file required
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
-	@echo "building $@"
+	@echo " building $@"
 	$(CXX) $< $(CXXFLAGS) $(INC) -c -o $@ $(LIB)
 
 clean:
