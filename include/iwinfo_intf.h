@@ -1,15 +1,10 @@
 #ifndef _IWINFO_INTF_H_
 #define _IWINFO_INTF_H_
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 #include "iwinfo.h"
-
-#ifdef __cplusplus
 }
-#endif
+
 
 #include <wdb40_types.h>
 #include <module.h>

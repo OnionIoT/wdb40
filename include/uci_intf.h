@@ -1,15 +1,9 @@
 #ifndef _UCI_INTF_H_
 #define _UCI_INTF_H_
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 #include "uci.h"
-
-#ifdef __cplusplus
 }
-#endif
 
 #include <wdb40_types.h>
 #include <module.h>
