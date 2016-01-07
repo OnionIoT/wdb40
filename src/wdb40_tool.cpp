@@ -19,6 +19,7 @@ void wdb40Tool::Reset()
 	// objects
 	iw 			= NULL;
 	uci 		= NULL;
+	ubus 		= NULL;
 
 	// vectors
 	scanList.clear();
@@ -165,12 +166,36 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 }
 
 // reload wireless
-int wdb40Tool::ReloadWifi ()
+int wdb40Tool::RestartWireless ()
 {
 	system("/sbin/wifi");
 	sleep(10);
 
 	return EXIT_SUCCESS;
+}
+
+int wdb40Tool::CheckWirelessStatus ()
+{
+	int 	status, tmp;
+
+	// allocate new ubus object
+	ubus 		= new ubusIntf();
+	ubus->SetVerbosity(1);
+
+	// perform the check
+	_Print(1, "> Checking wireless status\n");
+	status 	= ubus->GetNetworkWirelessUpStatus(tmp);
+
+	if (status == EXIT_SUCCESS) {
+		_Print(1, ">> Network.wireless up = %d\n", tmp);
+	}
+
+
+	// deallocate the iwinfo object
+	delete 	ubus;
+	ubus 	= NULL;
+
+	return status;
 }
 
 

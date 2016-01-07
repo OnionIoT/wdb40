@@ -8,6 +8,7 @@
 #include <network_info.h>
 #include <iwinfo_intf.h>
 #include <uci_intf.h>
+#include <ubus_intf.h>
 
 
 // class to Store all info related to a network
@@ -29,8 +30,12 @@ public:
 	// iwinfo intf functions
 	int 	ScanAvailableNetworks		();
 
+	// ubus intf functions
+	int 	CheckWirelessStatus 		();
+
 	// wdb40 functions
 	int 	CheckForConfigNetworks		();
+	int 	RestartWireless 			();
 
 
 private:
@@ -44,6 +49,7 @@ private:
 	// private members
 	iwInfoIntf	*iw;
 	uciIntf 	*uci;
+	ubusIntf 	*ubus;
 
 	std::vector<networkInfo> 	scanList;
 	std::vector<networkInfo> 	configList;

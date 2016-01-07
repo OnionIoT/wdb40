@@ -14,6 +14,15 @@ int main(int argc, char **argv)
 	wdb40 		= new wdb40Tool();
 	wdb40->SetVerbosity(2);
 
+
+	// get wireless status
+	status 	= wdb40->CheckWirelessStatus();
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+		return 0;
+	}
+	return 0;
+
 	// read configured networks
 	status 	= wdb40->ReadConfigNetworks();
 	if (status != EXIT_SUCCESS) {
