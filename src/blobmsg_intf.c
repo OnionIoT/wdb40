@@ -52,15 +52,15 @@ int blobMsgFindAttr(struct blob_attr *attr, char* name, struct blob_attr *ret)
 	struct blob_attr 	*var 	= NULL;
 
 	// traverse the blobmsg searching for the value
-	printf("> Searching blobMsg for \"%s\"\n", name);
+	BLOBMSG_DBG_PRINT("> Searching blobMsg for \"%s\"\n", name);
 	ret 	= _searchTraverse( blobmsg_data(attr), blobmsg_data_len(attr), name );
 
 	//(*ret) 	= (*var);
 	if (ret == NULL) {
-		printf("blobMsgFindAttr:: ret is NULL\n");
+		BLOBMSG_DBG_PRINT("blobMsgFindAttr:: ret is NULL\n");
 	}
 	else {
-		printf("blobMsgFindAttr:: ret is ok\n");
+		BLOBMSG_DBG_PRINT("blobMsgFindAttr:: ret is ok\n");
 	}
 
 	return (var != NULL ? EXIT_SUCCESS : EXIT_FAILURE);
@@ -72,7 +72,7 @@ int blobMsgFindValue(struct blob_attr *attr, char* name, char* val, int *valType
 	struct 	blob_attr 	*var = NULL;
 
 	// traverse the blobmsg searching for the value
-	printf("> Searching blobMsg for \"%s\"\n", name);
+	BLOBMSG_DBG_PRINT("> Searching blobMsg for \"%s\"\n", name);
 	var 	= _searchTraverse( blobmsg_data(attr), blobmsg_data_len(attr), name );
 
 	// convert the find result to a char*
@@ -80,12 +80,12 @@ int blobMsgFindValue(struct blob_attr *attr, char* name, char* val, int *valType
 
 	// check the results
 	if (var == NULL) {
-		printf("> No match found!\n");
+		BLOBMSG_DBG_PRINT("> No match found!\n");
 		*valType 	= (int)BLOBMSG_TYPE_UNSPEC;
 		return EXIT_FAILURE;
 	}
 
-	printf("> Found var \"%s\", type: %d, value: \"%s\"\n", blobmsg_name(var), blobmsg_type(var), val );
+	BLOBMSG_DBG_PRINT("> Found var \"%s\", type: %d, value: \"%s\"\n", blobmsg_name(var), blobmsg_type(var), val );
 
 	return EXIT_SUCCESS;
 }
@@ -101,7 +101,7 @@ void* _searchTraverse(struct blob_attr *attr, int len, char* name)
 	if (currentName == NULL) {
 		return NULL;
 	}
-	//printf(">> Current token:  \"%s\"\n", currentName);
+	//BLOBMSG_DBG_PRINT(">> Current token:  \"%s\"\n", currentName);
 
 
 	// traverse each item in the blob (at this level)
@@ -110,7 +110,7 @@ void* _searchTraverse(struct blob_attr *attr, int len, char* name)
 		if (strcmp(currentName, blobmsg_name(pos)) == 0) {
 			// check the type
 			type 	= blobmsg_type(pos);
-			//printf("item:: name: %s, type: %d\n", blobmsg_name(pos), type );
+			//BLOBMSG_DBG_PRINT("item:: name: %s, type: %d\n", blobmsg_name(pos), type );
 
 			// descend into arrays and tables
 			if 	(	type == BLOBMSG_TYPE_TABLE ||

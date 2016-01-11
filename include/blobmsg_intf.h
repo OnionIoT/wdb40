@@ -5,6 +5,15 @@
 #include <libubox/blobmsg_json.h>
 
 
+// define for debug prints
+//#define BLOBMSG_INTF_DEBUG
+
+#ifdef BLOBMSG_INTF_DEBUG
+	#define BLOBMSG_DBG_PRINT(a,...) 			printf(a,##__VA_ARGS__)
+#else
+	#define BLOBMSG_DBG_PRINT(a,...)
+#endif
+
 
 
 #define BLOBMSG_INTF_SEARCH_DELIMITER		"/"
