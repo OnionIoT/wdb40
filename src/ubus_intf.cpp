@@ -97,6 +97,7 @@ int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
 
 
 	// get the context
+	_Print(4, "UBUS DBG: about to read context\n");
 	status 	= ReadContext();
 	if (status != EXIT_SUCCESS) {
 		_Print(1, "> ERROR: Could not allocate ubus context\n");
@@ -108,23 +109,30 @@ int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
 	method 	= UBUS_INTF_NETWORK_WIRELESS_METHOD_STATUS;
 
 	// lookup ubus group
+	_Print(4, "UBUS DBG: about to lookup id\n");
 	status 	= ubus_lookup_id(ctx, group.c_str(), &methodId);
 
 	if (status == EXIT_SUCCESS) {
 		// initialize the msg
+		_Print(4, "UBUS DBG: blob_buf_init\n");
 		blob_buf_init(&bMsg, 0);
 
 		// setup the static variables for the handler
+		_Print(4, "UBUS DBG: attributeName allocation\n");
 		attributeName 	= new char[IWINFO_MAX_STRING_SIZE];
 		sprintf(attributeName, "radio0/%s", UBUS_INTF_NETWORK_WIRELESS_STATUS_ATTRIBUTE_UP);
 
+		_Print(4, "UBUS DBG: about to ubus_invoke\n");
 		status 	= ubus_invoke(	ctx, methodId, method.c_str(), 					// ubus context, group id, method string
 								bMsg.head, _receiveCallResultData, NULL,		// blob attr, handler function, priv
 								UBUS_INTF_DEFAULT_TIMEOUT*UBUS_INTF_TIMEOUT_MULTIPLIER);	// timeout
 
+		_Print(4, "UBUS DBG: about to read booleanValue\n");
 		status 	= _ReadBooleanValue(bUp);
 
 		// cleanup
+		_Print(4, "UBUS DBG: blob_buf_free\n");
+		blob_buf_free(&bMsg);
 		delete attributeName;
 	}
 
@@ -150,7 +158,7 @@ int ubusIntf::_ReadBooleanValue(int &bVal)
 	}
 	else if (strcmp(attributeValue, UBUS_INTF_VALUE_FALSE) == 0 ) {
 		// value is false
-		bVal 	= 1;
+		bVal 	= 0;
 	}
 	else {
 		// invalid value
