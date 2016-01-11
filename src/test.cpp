@@ -15,13 +15,12 @@ int main(int argc, char **argv)
 	wdb40->SetVerbosity(2);
 
 
-	// get wireless status
-	status 	= wdb40->CheckWirelessStatus();
+	// wait until wireless status is up
+	status 	= wdb40->WaitUntilWirelessStatus(1);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 		return 0;
 	}
-	return 0;
 
 	// read configured networks
 	status 	= wdb40->ReadConfigNetworks();
@@ -29,7 +28,7 @@ int main(int argc, char **argv)
 		printf("Returned ERROR!\n", status);
 		return 0;
 	}
-
+/*
 	// enable AP wireless
 	status 	= wdb40->SetApWirelessEnable(1);
 	if (status != EXIT_SUCCESS) {
@@ -43,17 +42,28 @@ int main(int argc, char **argv)
 		printf("Returned ERROR!\n", status);
 		return 0;
 	}
+*/
+	
+	//// reload the wifi configuration
+	printf("\n");
+	status 	= wdb40->RestartWireless();
 
-	// reload the wifi configuration
-	status 	= wdb40->ReloadWifi();
+
+	//// wait until wireless status is up
+	status 	= wdb40->WaitUntilWirelessStatus(1);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+		return 0;
+	}
 
 
-	// scan for networks
+	//// scan for networks
 	status 	= wdb40->ScanAvailableNetworks();
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 		return 0;
 	}
+
 
 	// check configured networks against the scanned networks
 	status 	= wdb40->CheckForConfigNetworks();

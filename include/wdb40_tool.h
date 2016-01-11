@@ -11,6 +11,9 @@
 #include <ubus_intf.h>
 
 
+#define WDB40_TOOL_TIMEOUT 				3000;
+
+
 // class to Store all info related to a network
 class wdb40Tool : public Module {
 public:
@@ -22,7 +25,6 @@ public:
 
 	// uci intf functions	
 	int 	ReadConfigNetworks			();
-	int 	ReloadWifi					();
 
 	int 	SetApWirelessEnable 		(int bEnable);
 	int 	SetAllStaWirelessEnable		(int bEnable);
@@ -31,7 +33,8 @@ public:
 	int 	ScanAvailableNetworks		();
 
 	// ubus intf functions
-	int 	CheckWirelessStatus 		();
+	int 	CheckWirelessStatus 		(int &bUp);
+	int 	WaitUntilWirelessStatus	 	(int bUp);
 
 	// wdb40 functions
 	int 	CheckForConfigNetworks		();

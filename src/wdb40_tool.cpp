@@ -27,32 +27,7 @@ void wdb40Tool::Reset()
 }
 
 
-// use iwinfo intf to scan for available networks
-int wdb40Tool::ScanAvailableNetworks()
-{
-	int 	status, tmp;
-
-	// allocate new iwinfo object
-	iw 		= new iwInfoIntf();
-	iw->SetVerbosity(1);
-
-	// perform the scan
-	_Print(1, "> Scanning for available networks...\n");
-	status 	= iw->WifiScan();
-
-	// get the vector of networks
-	status 	|= iw->GetScanList(scanList);
-	_Print(2, ">> Found %d networks\n", scanList.size());
-
-	//_PrintNetworkList(scanList);
-
-	// deallocate the iwinfo object
-	delete 	iw;
-	iw 	= NULL;
-
-	return status;
-}
-
+///// UCI INTF FUNCTIONS /////
 // use uci intf to read configured networks
 int wdb40Tool::ReadConfigNetworks() 
 {
@@ -82,10 +57,159 @@ int wdb40Tool::ReadConfigNetworks()
 	// release the uci context
 	status 	|= uci->ReleaseBackend();
 
+	// clean-up
+	delete uci;
+	uci 	= NULL;
+
 
 	return status;
 }
 
+// enable/disable main AP network
+int wdb40Tool::SetApWirelessEnable(int bEnable)
+{
+	int 	status 		= EXIT_FAILURE;
+	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
+
+	_Print(1, "> %s AP Network\n", (bEnable == 1 ? "Enabling" : "Disabling") );
+
+
+	// initialize the object
+	uci 	= new uciIntf();
+
+	// generic traversal of network list
+	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_AP, bDisable);
+
+	// clean-up
+	delete uci;
+	uci 	= NULL;
+
+	return 	status;
+}
+
+// disable all STA networks
+int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
+{
+	int 	status 		= EXIT_FAILURE;
+
+	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
+
+	_Print(1, "> %s all STA Networks\n", (bEnable == 1 ? "Enabling" : "Disabling") );
+
+
+	// initialize the object
+	uci 	= new uciIntf();
+
+	// generic traversal of network list
+	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA, bDisable);
+
+	// clean-up
+	delete uci;
+	uci 	= NULL;
+
+	return 	status;
+}
+
+
+
+///// IWINFO INTF FUNCTIONS /////
+// use iwinfo intf to scan for available networks
+int wdb40Tool::ScanAvailableNetworks()
+{
+	int 	status, tmp;
+
+	// allocate new iwinfo object
+	iw 		= new iwInfoIntf();
+	iw->SetVerbosity(1);
+
+	// perform the scan
+	_Print(1, "> Scanning for available networks...\n");
+	status 	= iw->WifiScan();
+
+	// get the vector of networks
+	status 	|= iw->GetScanList(scanList);
+	_Print(2, ">> Found %d networks\n", scanList.size());
+
+	//_PrintNetworkList(scanList);
+
+	// deallocate the iwinfo object
+	delete 	iw;
+	iw 	= NULL;
+
+	return status;
+}
+
+
+
+///// UBUS INTF FUNCTIONS /////
+// use ubus to find the status.up for network.wireless
+int wdb40Tool::CheckWirelessStatus (int &bUp)
+{
+	int 	status;
+
+	// default
+	bUp 	= 0;
+
+	// allocate new ubus object
+	ubus 	= new ubusIntf();
+	ubus->SetVerbosity(2);
+
+	// perform the check
+	_Print(3, "> Checking wireless status\n");
+	status 	= ubus->GetNetworkWirelessUpStatus(bUp);
+	//_Print(2, ">> checked network.wireless, ret = %d, up = %d\n", status, bUp);
+
+	if (status == EXIT_SUCCESS) {
+		_Print(3, "> Network.wireless up = %d\n", bUp);
+	}
+
+
+	// deallocate the iwinfo object
+	delete 	ubus;
+	ubus 	= NULL;
+
+	return status;
+}
+
+// wait until the network.wireless.status matches the argument
+int wdb40Tool::WaitUntilWirelessStatus (int bUp)
+{
+	int 	status;
+	int 	bLoop, count, timeout, wirelessStatus;
+
+
+	_Print(1, "> Waiting for wireless status = %d\n", bUp);
+	bLoop			= 1;
+	count 			= 0;
+	timeout 		= WDB40_TOOL_TIMEOUT;
+	wirelessStatus 	= -1;
+
+	// loop until the desired status is found (or timeout)
+	while (bLoop) {
+		// check the status
+		status 	= CheckWirelessStatus(wirelessStatus);
+
+		// delay between checks
+		usleep(1000);
+
+		// handle the looping
+		count++;
+		bLoop 	= (wirelessStatus != bUp && count < timeout);
+	}
+
+	// check for timeout
+	if (count >= timeout) {
+		_Print(1, "> ERROR: timeout waiting for wireless status!\n");
+		return EXIT_FAILURE;
+	}
+
+	_Print(1, "> Done, wireless status is %d!\n", wirelessStatus);
+	sleep(2);
+	return 	status;
+}
+
+
+///// WDB40 FUNCTIONS /////
 // compare configured networks against scanned networks
 int wdb40Tool::CheckForConfigNetworks()
 {
@@ -136,67 +260,17 @@ int wdb40Tool::CheckForConfigNetworks()
 }
 
 
-// enable/disable main AP network
-int wdb40Tool::SetApWirelessEnable(int bEnable)
-{
-	int 	status 		= EXIT_FAILURE;
-	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
-
-	_Print(1, "> %s AP Network\n", (bEnable == 1 ? "Enabling" : "Disabling") );
-
-	// generic traversal of network list
-	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_AP, bDisable);
-
-	return 	status;
-}
-
-// disable all STA networks
-int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
-{
-	int 	status 		= EXIT_FAILURE;
-
-	int 	bDisable 	= (bEnable == 1 ? 0 : 1);		// uci option is disable, reverse of enable
-
-	_Print(1, "> %s all STA Networks\n", (bEnable == 1 ? "Enabling" : "Disabling") );
-
-	// generic traversal of network list
-	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA, bDisable);
-
-	return 	status;
-}
-
 // reload wireless
 int wdb40Tool::RestartWireless ()
 {
+	_Print(1, "> Restarting wifi interface...\n");
 	system("/sbin/wifi");
-	sleep(10);
+	//usleep(500000);
+	sleep(2);
 
 	return EXIT_SUCCESS;
 }
 
-int wdb40Tool::CheckWirelessStatus ()
-{
-	int 	status, tmp;
-
-	// allocate new ubus object
-	ubus 		= new ubusIntf();
-	ubus->SetVerbosity(1);
-
-	// perform the check
-	_Print(1, "> Checking wireless status\n");
-	status 	= ubus->GetNetworkWirelessUpStatus(tmp);
-
-	if (status == EXIT_SUCCESS) {
-		_Print(1, ">> Network.wireless up = %d\n", tmp);
-	}
-
-
-	// deallocate the iwinfo object
-	delete 	ubus;
-	ubus 	= NULL;
-
-	return status;
-}
 
 
 
