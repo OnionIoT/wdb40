@@ -7,8 +7,13 @@
 
 #include <string>
 
+#include <iostream>
+#include <fstream>
+
 
 #define NETWORK_INFO_DEFAULT_NONE		"default-none"
+
+#define NETWORK_INFO_DELIMITER 			" :::: "
 
 
 // class to Store all info related to a network
@@ -28,6 +33,9 @@ public:
 	~networkInfo 	(void);
 
 	void 	Reset					();
+
+	// static function
+	static int 	ParseNetworkFileLine 	(char* input, std::string &rdSsid, int &rdEncryptionType);
 
 
 	// set functions
@@ -83,6 +91,9 @@ public:
 	void 			PrintBasic				();
 	void 			PrintEncryptionKey 		();
 	void 			Print 					();
+
+	// file print functions
+	void 			FilePrintBasic 			(std::ofstream& file);
 
 	// formatting functions
 	std::string 	FormatNetworkMode 		();

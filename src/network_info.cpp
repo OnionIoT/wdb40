@@ -262,6 +262,25 @@ int networkInfo::GetEncryptionSuite ()
 }
 
 
+//// formatting functions
+std::string networkInfo::FormatNetworkMode() 
+{
+	std::string 	output;
+
+	if (networkMode == WDB40_NETWORK_AP) {
+		output 	= "AP";
+	}
+	else if (networkMode == WDB40_NETWORK_STA) {
+		output 	= "STA";
+	}
+	else {
+		output 	= "Unknown";
+	}
+
+	return output;
+}
+
+
 //// printing functions
 void networkInfo::PrintBasic()
 {
@@ -300,24 +319,41 @@ void networkInfo::Print()
 }
 
 
-//// formatting functions
-std::string networkInfo::FormatNetworkMode() 
+//// file printing functions
+void networkInfo::FilePrintBasic(std::ofstream& file)
 {
-	std::string 	output;
+	std::string 	encrType, encrSubtype;
 
-	if (networkMode == WDB40_NETWORK_AP) {
-		output 	= "AP";
-	}
-	else if (networkMode == WDB40_NETWORK_STA) {
-		output 	= "STA";
-	}
-	else {
-		output 	= "Unknown";
-	}
 
-	return output;
+	if (file.is_open()) {
+			file << ssid << NETWORK_INFO_DELIMITER << encryptionType << "\n";
+	}
 }
 
+int networkInfo::ParseNetworkFileLine (char* input, std::string &rdSsid, int &rdEncryptionType)
+{
+	int 	status;
+	char 	pattern[IWINFO_MAX_STRING_SIZE];
+	char 	rdSsidChar[IWINFO_MAX_STRING_SIZE];
 
+	//printf(">> inside static function\n");
+
+	// determine the pattern
+	sprintf(pattern, "%%s%s%%d", NETWORK_INFO_DELIMITER);
+
+	// read the input line
+	status 	= sscanf(input, pattern, rdSsidChar, &rdEncryptionType);
+	//printf("DBG:: sscanf: pattern is '%s', returned '%d', ssid = '%s', encr = '%d'\n", pattern, status, rdSsidChar, rdEncryptionType );
+
+	if (status == 2) {
+		rdSsid 	= std::string(rdSsidChar);
+		status 	= EXIT_SUCCESS;
+	}
+	else {
+		status 	= EXIT_FAILURE;
+	}
+
+	return 	status;
+}
 
 
