@@ -1,6 +1,10 @@
 #ifndef _WDB40_TOOL_H_
 #define _WDB40_TOOL_H_
 
+
+#include <iostream>
+#include <fstream>
+
 #include <wdb40_types.h>
 #include <wdb40_utils.h>
 #include <module.h>
@@ -12,6 +16,7 @@
 
 
 #define WDB40_TOOL_TIMEOUT 				3000;
+#define WDB40_TOOL_FILE 				"/tmp/wifi_scan"
 
 
 // class to Store all info related to a network
@@ -37,6 +42,7 @@ public:
 	int 	WaitUntilWirelessStatus	 	(int bUp);
 
 	// wdb40 functions
+	int 	ReadScanFile 				();
 	int 	CheckForConfigNetworks		();
 	int 	RestartWireless 			();
 
@@ -44,6 +50,10 @@ public:
 private:
 	// private functions
 	void 	_PrintNetworkList				(std::vector<networkInfo> networkList);
+	void 	_FilePrintNetworkList			(std::vector<networkInfo> networkList, std::string filename);
+
+	int 	_FileReadNetworkList			(std::string filename);
+
 	int 	_CompareNetworks				(networkInfo network1, networkInfo network2, int &bMatch);
 
 	int 	_GenericNetworkListTraversal	(int mode, int param0);

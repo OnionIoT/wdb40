@@ -41,14 +41,17 @@ int wdb40Tool::ReadConfigNetworks()
 	// initialize the uci backend
 	_Print(2, ">> Initializing the uci backend...\n");
 	status 	= uci->ReadBackend();
+	_Print(4, "\tstatus = %d\n", status);
 
 	// read the wireless section
 	_Print(2, ">> Reading the wireless configuration...\n");
 	status 	|= uci->ReadWirelessConfig();
+	_Print(4, "\tstatus = %d\n", status);
 
-	// process the wireless section
+	/*// process the wireless section
 	_Print(2, ">> Processing the wireless configuration...\n");
 	status 	|= uci->ProcessConfigData();
+	_Print(4, "\tstatus = %d\n", status);*/
 
 	// return the processed vector of networks
 	uci->GetNetworkList(configList);
@@ -130,7 +133,9 @@ int wdb40Tool::ScanAvailableNetworks()
 	status 	|= iw->GetScanList(scanList);
 	_Print(2, ">> Found %d networks\n", scanList.size());
 
-	//_PrintNetworkList(scanList);
+	_FilePrintNetworkList(scanList, WDB40_TOOL_FILE);
+	iw->ReleaseBackend();
+
 
 	// deallocate the iwinfo object
 	delete 	iw;
@@ -152,7 +157,7 @@ int wdb40Tool::CheckWirelessStatus (int &bUp)
 
 	// allocate new ubus object
 	ubus 	= new ubusIntf();
-	ubus->SetVerbosity(2);
+	ubus->SetVerbosity(verbosityLevel);
 
 	// perform the check
 	_Print(3, "> Checking wireless status\n");
@@ -204,12 +209,17 @@ int wdb40Tool::WaitUntilWirelessStatus (int bUp)
 	}
 
 	_Print(1, "> Done, wireless status is %d!\n", wirelessStatus);
-	sleep(2);
+	sleep(1);
 	return 	status;
 }
 
 
 ///// WDB40 FUNCTIONS /////
+int wdb40Tool::ReadScanFile()
+{
+	_FileReadNetworkList(WDB40_TOOL_FILE);
+}
+
 // compare configured networks against scanned networks
 int wdb40Tool::CheckForConfigNetworks()
 {
@@ -285,6 +295,60 @@ void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> networkList)
 		(*it).PrintBasic();
 	}
 }
+
+void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> networkList, std::string filename)
+{
+	std::ofstream file;
+	
+	// open the file for writing
+	file.open( filename.c_str() );
+
+	// print each network in the vector
+	if (file.is_open() ) {
+		for (	std::vector<networkInfo>::iterator it = networkList.begin(); 
+				it != networkList.end(); 
+				it++
+			) 
+		{
+			(*it).FilePrintBasic(file);
+		}
+	}
+
+	// close the file
+	file.close();
+}
+
+int wdb40Tool::_FileReadNetworkList(std::string filename)
+{
+	int 	status;
+	int 	encrType;
+	char 	line[IWINFO_MAX_STRING_SIZE];
+
+	std::string 	ssid;
+	std::ifstream 	file;
+	
+	// open the file for reading
+	file.open( filename.c_str() );
+
+	// print each network in the vector
+	if (file.is_open() ) {
+		_Print(2, ">> Successfully opened file '%s'\n", filename.c_str() );
+		// file exists
+		while (file.getline(line, IWINFO_MAX_STRING_SIZE) ) {
+			// parse the line
+			status 	= networkInfo::ParseNetworkFileLine (line, ssid, encrType);
+			if (status == EXIT_SUCCESS) {
+				_Print(1, "read: ssid: '%s', encryption type: '%d'\n", ssid.c_str(), encrType);
+			}
+		}
+	}
+
+	// close the file
+	file.close();
+
+	return 	status;
+}
+
 
 // compare two networks based on SSID and encryption type
 // 	comparison result 		bMatch
