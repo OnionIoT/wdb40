@@ -29,7 +29,7 @@ void wdb40Tool::Reset()
 
 ///// UCI INTF FUNCTIONS /////
 // use uci intf to read configured networks
-int wdb40Tool::ReadConfigNetworks() 
+int wdb40Tool::ReadConfigNetworks(int bPrintToFile) 
 {
 	int 	status;
 
@@ -43,19 +43,19 @@ int wdb40Tool::ReadConfigNetworks()
 	status 	= uci->ReadBackend();
 	_Print(4, "\tstatus = %d\n", status);
 
-	// read the wireless section
+	// read the wireless config section
 	_Print(2, ">> Reading the wireless configuration...\n");
 	status 	|= uci->ReadWirelessConfig();
 	_Print(4, "\tstatus = %d\n", status);
 
-	/*// process the wireless section
-	_Print(2, ">> Processing the wireless configuration...\n");
-	status 	|= uci->ProcessConfigData();
-	_Print(4, "\tstatus = %d\n", status);*/
-
 	// return the processed vector of networks
 	uci->GetNetworkList(configList);
 	_Print(2, ">> List has %d networks\n", configList.size() );
+
+	// print the networks to a file
+	if (bPrintToFile == 1) {
+		_FilePrintNetworkList(configList, WDB40_TOOL_FILE_CONFIG);
+	}
 
 	// release the uci context
 	status 	|= uci->ReleaseBackend();
@@ -113,6 +113,38 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 	return 	status;
 }
 
+int wdb40Tool::EnableMatchedNetwork()
+{
+	int 	status 	= EXIT_FAILURE;
+
+	if (matchList.size() > 0) {
+		_Print(1, "> Attempting to enable wireless network configuration...\n");
+
+		// initialize the object
+		uci 	= new uciIntf();
+		uci->SetVerbosity(verbosityLevel);
+
+		// initialize the uci backend
+		_Print(2, ">> Initializing the uci backend...\n");
+		status 	= uci->ReadBackend();
+		if (status != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+
+		// attempt to connect to the first matched network
+		_Print(2, ">> Enabling wireless network '%s'\n", (matchList.at(0)).GetSsid().c_str() );
+		status 	= uci->SetWirelessSectionDisable( &(matchList.at(0)), 0, 1);
+
+		// release the uci context
+		status 	|= uci->ReleaseBackend();
+
+		// clean-up
+		delete uci;
+		uci 	= NULL;
+	}
+
+	return 	status;
+}
 
 
 ///// IWINFO INTF FUNCTIONS /////
@@ -133,7 +165,7 @@ int wdb40Tool::ScanAvailableNetworks()
 	status 	|= iw->GetScanList(scanList);
 	_Print(2, ">> Found %d networks\n", scanList.size());
 
-	_FilePrintNetworkList(scanList, WDB40_TOOL_FILE);
+	_FilePrintNetworkList(scanList, WDB40_TOOL_FILE_SCAN);
 	iw->ReleaseBackend();
 
 
@@ -215,13 +247,9 @@ int wdb40Tool::WaitUntilWirelessStatus (int bUp)
 
 
 ///// WDB40 FUNCTIONS /////
-int wdb40Tool::ReadScanFile()
-{
-	_FileReadNetworkList(WDB40_TOOL_FILE);
-}
-
+// NOTE: deprecated since cannot use uci and iwinfo libraries in same program
 // compare configured networks against scanned networks
-int wdb40Tool::CheckForConfigNetworks()
+int wdb40Tool::CheckForConfigNetworks(int bPrintToFile)
 {
 	int 	status, bMatch;
 
@@ -258,13 +286,23 @@ int wdb40Tool::CheckForConfigNetworks()
 
 			// check if the networks match
 			if (status == EXIT_SUCCESS && bMatch == 1) {
-				_Print(1, "> match for network '%s'\n", ((*itConfig).GetSsid()).c_str() );
-				(*itConfig).Print();
+				//_Print(1, "> match for network '%s'\n", ((*itConfig).GetSsid()).c_str() );
+				//(*itConfig).Print();
 
-				// LAZAR : add match to vector of matches
+				// add network to match list
+				matchList.push_back(*itConfig);
 			}
 		} // scanList loop
 	} // configList loop
+
+	if (matchList.size() > 0) {
+		_Print(1, "> Found %d matching network%s!\n", matchList.size(), (matchList.size() > 1 ? "s" : "") );
+	}
+
+	// print the networks to a file
+	if (bPrintToFile == 1) {
+		_FilePrintNetworkList(matchList, WDB40_TOOL_FILE_MATCH);
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -281,11 +319,47 @@ int wdb40Tool::RestartWireless ()
 	return EXIT_SUCCESS;
 }
 
+void wdb40Tool::PrintMatchNetworks()
+{
+	if (matchList.size() > 0) {
+		_Print(1, "> Matched networks:\n");
+		_PrintNetworkList(matchList);
+	}
+	else {
+		_Print(1, "> Scan found no matching networks!\n");
+	}
+}
+
+
+///// FILE FUNCTIONS /////
+int wdb40Tool::FetchConfigNetworks()
+{
+	_FileReadNetworkList(configList, WDB40_TOOL_FILE_CONFIG);
+	//_PrintNetworkList(configList);
+
+	return 	EXIT_SUCCESS;
+}
+
+int wdb40Tool::FetchScanNetworks()
+{
+	_FileReadNetworkList(scanList, WDB40_TOOL_FILE_SCAN);
+	//_PrintNetworkList(scanList);
+
+	return 	EXIT_SUCCESS;
+}
+
+int wdb40Tool::FetchMatchNetworks()
+{
+	_FileReadNetworkList(matchList, WDB40_TOOL_FILE_MATCH);
+	//_PrintNetworkList(scanList);
+
+	return 	EXIT_SUCCESS;
+}
 
 
 
 //// private functions
-void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> networkList)
+void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> &networkList)
 {
 	for (	std::vector<networkInfo>::iterator it = networkList.begin(); 
 			it != networkList.end(); 
@@ -296,12 +370,14 @@ void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> networkList)
 	}
 }
 
-void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> networkList, std::string filename)
+void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path)
 {
-	std::ofstream file;
+	char 			filePath[IWINFO_MAX_STRING_SIZE];
+	std::ofstream 	file;
 	
 	// open the file for writing
-	file.open( filename.c_str() );
+	sprintf(filePath, "%s/%s", path.c_str(), filename.c_str() );
+	file.open( filePath );
 
 	// print each network in the vector
 	if (file.is_open() ) {
@@ -316,29 +392,34 @@ void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> networkList, std:
 
 	// close the file
 	file.close();
+
+	_Print(2, "> Printed network list to file '%s'\n", filePath);
 }
 
-int wdb40Tool::_FileReadNetworkList(std::string filename)
+int wdb40Tool::_FileReadNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path)
 {
 	int 	status;
 	int 	encrType;
 	char 	line[IWINFO_MAX_STRING_SIZE];
+	char 	filePath[IWINFO_MAX_STRING_SIZE];
 
 	std::string 	ssid;
 	std::ifstream 	file;
 	
 	// open the file for reading
-	file.open( filename.c_str() );
+	sprintf(filePath, "%s/%s", path.c_str(), filename.c_str() );
+	file.open( filePath );
 
 	// print each network in the vector
 	if (file.is_open() ) {
-		_Print(2, ">> Successfully opened file '%s'\n", filename.c_str() );
+		_Print(2, ">> Successfully opened file '%s'\n", filePath );
 		// file exists
 		while (file.getline(line, IWINFO_MAX_STRING_SIZE) ) {
 			// parse the line
 			status 	= networkInfo::ParseNetworkFileLine (line, ssid, encrType);
 			if (status == EXIT_SUCCESS) {
-				_Print(1, "read: ssid: '%s', encryption type: '%d'\n", ssid.c_str(), encrType);
+				//_Print(1, "read: ssid: '%s', encryption type: '%d'\n", ssid.c_str(), encrType);
+				_AddNetwork(networkList, ssid, encrType);
 			}
 		}
 	}
@@ -435,5 +516,20 @@ int wdb40Tool::_GenericNetworkListTraversal(int mode, int param0)
 	return 	status;
 }
 
+// given a scanned network's ssid and encryption type, 
+// compare against all of the configured networks to find a match
+void wdb40Tool::_AddNetwork (std::vector<networkInfo> &networkList, std::string ssid, int encrType)
+{
+	int 	status;
+	networkInfo 	*network;
 
+	_Print(3, ">> Adding network '%s' to network list\n", ssid.c_str() );
+	network 	= new networkInfo(ssid, encrType);
+	network->SetVerbosity(1);
 
+	// add to the list
+	networkList.push_back(*network);
+
+	// clean-up
+	delete 	network;
+}
