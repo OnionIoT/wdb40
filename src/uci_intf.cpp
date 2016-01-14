@@ -77,47 +77,35 @@ int uciIntf::ReleaseBackend()
 // Read the UCI wireless configuration
 int uciIntf::ReadWirelessConfig()
 {
-	int 	status;
+	int 	status 	= EXIT_FAILURE;
 
-	char *config 	= strdup(UCI_INTF_WIFI_PACKAGE);
-
-	// lookup the wireless config
-	if ( uci_lookup_ptr(ctx, &wirelessPtr, config, true) != UCI_OK ) {
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
-
-// Process the config data
-int uciIntf::ProcessConfigData()
-{
-	int 	status = EXIT_FAILURE;
-	
+	struct 	uci_ptr 		ptr;
 	struct 	uci_element 	*e;
 	struct 	uci_section 	*s;
 
-	networkInfo				*network;
-	
-	// ensure that config has been read
-	if (wirelessPtr.target == UCI_TYPE_PACKAGE) {
-		
-		// look through each section
-		uci_foreach_element( &(wirelessPtr.p->sections), e ) {
-			if (e->type == UCI_TYPE_SECTION) {
-				// grab a pointer to the section
-				s = uci_lookup_section(ctx, wirelessPtr.p, e->name);
+	char 	*name 	= strdup(UCI_INTF_WIFI_PACKAGE);
 
-				// parse the section into a network info object
-				status 	= _ParseWirelessSection(s, e->name);
-			} // if UCI_TYPE_SECTION
+	// lookup the wireless config
+	if ( uci_lookup_ptr(ctx, &ptr, name, true) == UCI_OK ) {
+		// ensure that config has been read
+		if (ptr.target == UCI_TYPE_PACKAGE) {
+			
+			// look through each section
+			uci_foreach_element( &(ptr.p->sections), e ) {
+				if (e->type == UCI_TYPE_SECTION) {
+					// grab a pointer to the section
+					s = uci_lookup_section(ctx, ptr.p, e->name);
 
-		} // foreach uci element	
-		
-		status 	=  EXIT_SUCCESS;
-	} // if UCI_TYPE_PACKAGE
+					// parse the section into a network info object
+					status 	= _ParseWirelessSection(s, e->name);
+				} // if UCI_TYPE_SECTION
 
+			} // foreach uci element	
+		} // if UCI_TYPE_PACKAGE
+	}
 
+	// cleanup
+	free(name);
 	return status;
 }
 
@@ -125,16 +113,30 @@ int uciIntf::ProcessConfigData()
 // change the disabled option in a wireless section
 int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int bCommit)
 {
-	int 	status;
+	int 			status;
+	std::string 	configName;
 
 	char 	*wifiSection 	= new char[IWINFO_MAX_STRING_SIZE];
-	sprintf(wifiSection, "%s.%s.disabled", UCI_INTF_WIFI_PACKAGE, network->GetConfigName().c_str() );
+
+	// find the section config name to use
+	if ( strcmp(network->GetConfigName().c_str(), NETWORK_INFO_DEFAULT_NONE) != 0) {
+		// uci section name is known
+		configName 	= network->GetConfigName();
+	}
+	else {
+		// need to find the uci config name
+		_Print(2, ">> Searching for section name that matches network ssid\n");
+		status 	= _SearchForSection(network->GetSsid(), configName);
+	}
+
+	// create the full uci search string
+	sprintf(wifiSection, "%s.%s.disabled", UCI_INTF_WIFI_PACKAGE, configName.c_str() );
 
 
 	// lookup the wireless section
 	_Print(2, ">> Changing '%s' state to %d\n", wifiSection, bDisable);
 	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
-		return EXIT_FAILURE;
+		status 	= EXIT_FAILURE;
 	}
 
 	// set the disable option
@@ -302,4 +304,48 @@ int uciIntf::_ParseMode(const char* input)
 }
 
 
+// Search for a section based on the ssid name
+int uciIntf::_SearchForSection(std::string ssid, std::string& configName)
+{
+	int 	status = EXIT_FAILURE;
+	
+	struct 	uci_element 	*e;
+	struct 	uci_section 	*s;
+	struct 	uci_ptr 		ptr;
 
+	networkInfo				*network;
+	
+	char 	*name 	= strdup(UCI_INTF_WIFI_PACKAGE);
+
+	// lookup the wireless config
+	if ( uci_lookup_ptr(ctx, &ptr, name, true) == UCI_OK ) {
+		// ensure that config has been read
+		if (ptr.target == UCI_TYPE_PACKAGE) {
+			
+			// look through each section
+			uci_foreach_element( &(ptr.p->sections), e ) {
+				if (e->type == UCI_TYPE_SECTION) {
+					// grab a pointer to the section
+					s = uci_lookup_section(ctx, ptr.p, e->name);
+
+					// only look at wifi network setup
+					if ( strncmp(s->type, UCI_INTF_WIFI_IFACE, strlen(UCI_INTF_WIFI_IFACE) ) == 0) {
+
+						// check the ssid
+						if ( strcmp(ssid.c_str(), uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID) ) == 0 )
+						{	
+							_Print(2, "-- found section '%s' with matching ssid '%s'\n", e->name, ssid.c_str() );
+							configName 	= std::string(e->name);
+							status 	=  EXIT_SUCCESS;
+						}
+					} // if wifi-iface
+				} // if UCI_TYPE_SECTION
+
+			} // foreach uci element	
+		} // if UCI_TYPE_PACKAGE
+	}
+
+	// cleanup
+	free(name);
+	return status;
+}

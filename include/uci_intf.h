@@ -61,10 +61,11 @@ private:
 	int 	_ParseDisabled			(const char* input);
 	int 	_ParseMode				(const char* input);
 
+	int 	_SearchForSection 				(std::string ssid, std::string& configName);
+
 
 	// private members
 	struct uci_context 			*ctx;
-	struct uci_ptr 				wirelessPtr;
 	struct uci_ptr 				sectionPtr;
 
 	int 						bBackendInitialized;
