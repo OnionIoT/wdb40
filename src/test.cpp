@@ -26,7 +26,7 @@ int initialSetup()
 	}
 
 	// read configured networks
-	status 	|= wdb40->ReadConfigNetworks();
+	status 	|= wdb40->ReadConfigNetworks(1);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -90,8 +90,20 @@ int scanNetworks()
 	wdb40 		= new wdb40Tool();
 	wdb40->SetVerbosity(verbose);
 
-	//// scan for networks
+	// scan for networks
 	status 	= wdb40->ScanAvailableNetworks();
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
+	// read the configured networks from file
+	status 	= wdb40->FetchConfigNetworks();
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
+	// check configured networks against the scanned networks
+	status 	= wdb40->CheckForConfigNetworks(1);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 		return 0;
@@ -109,17 +121,32 @@ int connectAttempt()
 	int 		status;
 	wdb40Tool	*wdb40;
 
-
 	// initialize the object
 	wdb40 		= new wdb40Tool();
 	wdb40->SetVerbosity(verbose);
 
-	//// read scan file
-	status 	= wdb40->ReadScanFile();
+	// read match file
+	status 	= wdb40->FetchMatchNetworks();
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
-		return 0;
+		return EXIT_FAILURE;
 	}
+
+	// print the matches
+	wdb40->PrintMatchNetworks();
+
+	// enable matched network
+	status 	= wdb40->EnableMatchedNetwork();
+	if (status == EXIT_SUCCESS) {
+		// restart wireless
+		status 	|= wdb40->RestartWireless();
+	}
+
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
+	// LAZAR: add writing the rest of the matches to file
 
 	// clean-up
 	delete 	wdb40;
