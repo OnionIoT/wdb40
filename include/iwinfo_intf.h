@@ -22,7 +22,8 @@ extern "C" {
 // class to perform all iwinfo operations
 class iwInfoIntf : public Module {
 public:
-	iwInfoIntf(char* device = IWINFO_DEVICE_NAME);
+	iwInfoIntf(std::string device = IWINFO_DEVICE_NAME);
+	iwInfoIntf(char* device);
 	~iwInfoIntf(void);
 
 	void 	Reset					();

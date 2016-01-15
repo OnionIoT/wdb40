@@ -1,5 +1,17 @@
 #include <iwinfo_intf.h>
 
+iwInfoIntf::iwInfoIntf(std::string device) 
+{
+	Reset();
+
+	// initialize the device name
+	wirelessDevice 	= new char[WDB40_MAX_STRING_SIZE];
+	strncpy(wirelessDevice, device.c_str(), device.length() );
+
+
+	// verbosity setting
+	SetVerbosity(1);
+}
 
 iwInfoIntf::iwInfoIntf(char* device) 
 {
