@@ -82,7 +82,7 @@ void _receiveCallResultData(struct ubus_request *req, int type, struct blob_attr
 
 	// read the blobMsg for the attribute specified by the static member
 	//status 	= blobMsgFindAttr(msg, ubusIntf::attributeName, ubusIntf::receivedAttribute);
-	ubusIntf::attributeValue 	= new char[IWINFO_MAX_STRING_SIZE];
+	ubusIntf::attributeValue 	= new char[WDB40_MAX_STRING_SIZE];
 	status 	= blobMsgFindValue(msg, ubusIntf::attributeName, ubusIntf::attributeValue, &(ubusIntf::attributeType) );
 }
 
@@ -119,7 +119,7 @@ int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
 
 		// setup the static variables for the handler
 		_Print(4, "UBUS DBG: attributeName allocation\n");
-		attributeName 	= new char[IWINFO_MAX_STRING_SIZE];
+		attributeName 	= new char[WDB40_MAX_STRING_SIZE];
 		sprintf(attributeName, "radio0/%s", UBUS_INTF_NETWORK_WIRELESS_STATUS_ATTRIBUTE_UP);
 
 		_Print(4, "UBUS DBG: about to ubus_invoke\n");

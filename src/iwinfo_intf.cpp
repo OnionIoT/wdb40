@@ -6,7 +6,7 @@ iwInfoIntf::iwInfoIntf(char* device)
 	Reset();
 
 	// initialize the device name
-	wirelessDevice 	= new char[IWINFO_MAX_STRING_SIZE];
+	wirelessDevice 	= new char[WDB40_MAX_STRING_SIZE];
 	strncpy(wirelessDevice, device, strlen(device) );
 
 
@@ -86,7 +86,7 @@ int iwInfoIntf::ProcessScanList()
 
 
 	// allocate memory for the char*
-	ssid 	= new char[IWINFO_MAX_STRING_SIZE];
+	ssid 	= new char[WDB40_MAX_STRING_SIZE];
 
 	// print the scan results
 	for (i = 0, x = 1; i < len; i += sizeof(struct iwinfo_scanlist_entry), x++)

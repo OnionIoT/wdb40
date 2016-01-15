@@ -333,8 +333,8 @@ void networkInfo::FilePrintBasic(std::ofstream& file)
 int networkInfo::ParseNetworkFileLine (char* input, std::string &rdSsid, int &rdEncryptionType)
 {
 	int 	status;
-	char 	pattern[IWINFO_MAX_STRING_SIZE];
-	char 	rdSsidChar[IWINFO_MAX_STRING_SIZE];
+	char 	pattern[WDB40_MAX_STRING_SIZE];
+	char 	rdSsidChar[WDB40_MAX_STRING_SIZE];
 
 	//printf(">> inside static function\n");
 

@@ -209,16 +209,16 @@ int wdb40Tool::CheckWirelessStatus (int &bUp)
 }
 
 // wait until the network.wireless.status matches the argument
-int wdb40Tool::WaitUntilWirelessStatus (int bUp)
+int wdb40Tool::WaitUntilWirelessStatus (int bUp, int timeoutSeconds)
 {
 	int 	status;
 	int 	bLoop, count, timeout, wirelessStatus;
 
 
-	_Print(1, "> Waiting for wireless status = %d\n", bUp);
+	_Print(1, "> Waiting %d seconds for wireless status to be %d\n", timeoutSeconds, bUp);
 	bLoop			= 1;
 	count 			= 0;
-	timeout 		= WDB40_TOOL_TIMEOUT;
+	timeout 		= WDB40_TOOL_TIMEOUT_COUNT * timeoutSeconds;
 	wirelessStatus 	= -1;
 
 	// loop until the desired status is found (or timeout)
@@ -372,7 +372,7 @@ void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> &networkList)
 
 void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path)
 {
-	char 			filePath[IWINFO_MAX_STRING_SIZE];
+	char 			filePath[WDB40_MAX_STRING_SIZE];
 	std::ofstream 	file;
 	
 	// open the file for writing
@@ -400,8 +400,8 @@ int wdb40Tool::_FileReadNetworkList(std::vector<networkInfo> &networkList, std::
 {
 	int 	status;
 	int 	encrType;
-	char 	line[IWINFO_MAX_STRING_SIZE];
-	char 	filePath[IWINFO_MAX_STRING_SIZE];
+	char 	line[WDB40_MAX_STRING_SIZE];
+	char 	filePath[WDB40_MAX_STRING_SIZE];
 
 	std::string 	ssid;
 	std::ifstream 	file;
@@ -414,7 +414,7 @@ int wdb40Tool::_FileReadNetworkList(std::vector<networkInfo> &networkList, std::
 	if (file.is_open() ) {
 		_Print(2, ">> Successfully opened file '%s'\n", filePath );
 		// file exists
-		while (file.getline(line, IWINFO_MAX_STRING_SIZE) ) {
+		while (file.getline(line, WDB40_MAX_STRING_SIZE) ) {
 			// parse the line
 			status 	= networkInfo::ParseNetworkFileLine (line, ssid, encrType);
 			if (status == EXIT_SUCCESS) {

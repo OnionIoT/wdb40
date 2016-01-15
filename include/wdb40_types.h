@@ -2,7 +2,7 @@
 #define _WDB40_TYPES_H_
 
 
-#define IWINFO_MAX_STRING_SIZE			256
+#define WDB40_MAX_STRING_SIZE			256
 
 // network modes
 typedef enum e_Wdb40NetworkMode {

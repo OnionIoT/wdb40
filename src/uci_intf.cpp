@@ -116,7 +116,7 @@ int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int b
 	int 			status;
 	std::string 	configName;
 
-	char 	*wifiSection 	= new char[IWINFO_MAX_STRING_SIZE];
+	char 	*wifiSection 	= new char[WDB40_MAX_STRING_SIZE];
 
 	// find the section config name to use
 	if ( strcmp(network->GetConfigName().c_str(), NETWORK_INFO_DEFAULT_NONE) != 0) {

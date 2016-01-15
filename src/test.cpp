@@ -55,7 +55,7 @@ int initialSetup()
 }
 
 // wait until wifi is up
-int waitUntilReady()
+int waitUntilReady(int timeoutSeconds)
 {
 	int 		status;
 	wdb40Tool	*wdb40;
@@ -67,7 +67,7 @@ int waitUntilReady()
 
 
 	// wait until wireless status is up
-	status 	= wdb40->WaitUntilWirelessStatus(1);
+	status 	= wdb40->WaitUntilWirelessStatus(1, timeoutSeconds);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -159,9 +159,11 @@ int main(int argc, char **argv)
 	const char 	*progname;
 	int 		status;
 	int 		ch;
+	int 		timeout;
 
 	// set defaults
 	verbose 	= 1;
+	timeout 	= WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS;
 
 	// save the program name
 	progname 	= argv[0];	
@@ -170,7 +172,7 @@ int main(int argc, char **argv)
 	progname 	= argv[0];	
 
 	//// parse the option arguments
-	while ((ch = getopt(argc, argv, "vqh:")) != -1) {
+	while ((ch = getopt(argc, argv, "vqht:")) != -1) {
 		switch (ch) {
 		case 'v':
 			// verbose output
@@ -179,6 +181,10 @@ int main(int argc, char **argv)
 		case 'q':
 			// quiet output
 			verbose = 0;
+			break;
+		case 't':
+			// define timeout seconds
+			timeout = atoi(optarg);
 			break;
 		default:
 			usage(progname);
@@ -206,7 +212,7 @@ int main(int argc, char **argv)
 	}
 	else if (strcmp("wait", argv[0]) == 0) {
 		// wait until everyting is ready again
-		status 	= waitUntilReady();
+		status 	= waitUntilReady(timeout);
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}

@@ -15,7 +15,9 @@
 #include <ubus_intf.h>
 
 
-#define WDB40_TOOL_TIMEOUT 				3000;
+#define WDB40_TOOL_TIMEOUT_COUNT				300
+#define WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS 		10
+
 #define WDB40_TOOL_FILE_PATH			"/tmp"
 #define WDB40_TOOL_FILE_CONFIG 			"wifi_config"
 #define WDB40_TOOL_FILE_SCAN 			"wifi_scan"
@@ -45,7 +47,7 @@ public:
 
 	// ubus intf functions
 	int 	CheckWirelessStatus 		(int &bUp);
-	int 	WaitUntilWirelessStatus	 	(int bUp);
+	int 	WaitUntilWirelessStatus	 	(int bUp, int timeoutSeconds = WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS);
 
 	// wdb40 functions
 	int 	CheckForConfigNetworks		(int bPrintToFile = 0);
