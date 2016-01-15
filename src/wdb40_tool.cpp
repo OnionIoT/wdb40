@@ -24,6 +24,10 @@ void wdb40Tool::Reset()
 	// vectors
 	scanList.clear();
 	configList.clear();
+	matchList.clear();
+
+	// other
+	bWirelessConfigChanged 	= 0;
 }
 
 
@@ -83,6 +87,7 @@ int wdb40Tool::SetApWirelessEnable(int bEnable)
 
 	// initialize the object
 	uci 	= new uciIntf();
+	uci->SetVerbosity(verbosityLevel);
 
 	// generic traversal of network list
 	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_AP, bDisable);
@@ -106,6 +111,7 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 
 	// initialize the object
 	uci 	= new uciIntf();
+	uci->SetVerbosity(verbosityLevel);
 
 	// generic traversal of network list
 	status 	= _GenericNetworkListTraversal(WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA, bDisable);
@@ -138,6 +144,7 @@ int wdb40Tool::EnableMatchedNetwork()
 		// attempt to connect to the first matched network
 		_Print(2, ">> Enabling wireless network '%s'\n", (matchList.at(0)).GetSsid().c_str() );
 		status 	= uci->SetWirelessSectionDisable( &(matchList.at(0)), 0, 1);
+		bWirelessConfigChanged 	= 1;	// so that wifi restart is triggered
 
 		// release the uci context
 		status 	|= uci->ReleaseBackend();
@@ -184,7 +191,7 @@ int wdb40Tool::ScanAvailableNetworks()
 
 ///// UBUS INTF FUNCTIONS /////
 // use ubus to find the status.up for network.wireless
-int wdb40Tool::CheckWirelessStatus (int &bUp)
+int wdb40Tool::CheckWirelessStatus (int &bUp, int statusType)
 {
 	int 	status;
 
@@ -195,13 +202,14 @@ int wdb40Tool::CheckWirelessStatus (int &bUp)
 	ubus 	= new ubusIntf();
 	ubus->SetVerbosity(verbosityLevel);
 
+	_Print(3, "> Checking wireless %s status\n", (GetNetworkIntfString(statusType)).c_str() );
+
 	// perform the check
-	_Print(3, "> Checking wireless status\n");
-	status 	= ubus->GetNetworkWirelessUpStatus(bUp);
+	status 	= ubus->GetNetworkUpStatus(bUp, statusType);
 	//_Print(2, ">> checked network.wireless, ret = %d, up = %d\n", status, bUp);
 
 	if (status == EXIT_SUCCESS) {
-		_Print(3, "> Network.wireless up = %d\n", bUp);
+		_Print(3, "> Wireless %s up = %d\n", (GetNetworkIntfString(statusType)).c_str(), bUp);
 	}
 
 
@@ -213,7 +221,7 @@ int wdb40Tool::CheckWirelessStatus (int &bUp)
 }
 
 // wait until the network.wireless.status matches the argument
-int wdb40Tool::WaitUntilWirelessStatus (int bUp, int timeoutSeconds)
+int wdb40Tool::WaitUntilWirelessStatus (int bUp, int statusType, int timeoutSeconds)
 {
 	int 	status;
 	int 	bLoop, count, timeout, wirelessStatus;
@@ -228,7 +236,7 @@ int wdb40Tool::WaitUntilWirelessStatus (int bUp, int timeoutSeconds)
 	// loop until the desired status is found (or timeout)
 	while (bLoop) {
 		// check the status
-		status 	= CheckWirelessStatus(wirelessStatus);
+		status 	= CheckWirelessStatus(wirelessStatus, statusType);
 
 		// delay between checks
 		usleep(1000);
@@ -313,12 +321,16 @@ int wdb40Tool::CheckForConfigNetworks(int bPrintToFile)
 
 
 // reload wireless
-int wdb40Tool::RestartWireless ()
+int wdb40Tool::RestartWireless (int bForce)
 {
-	_Print(1, "> Restarting wifi interface...\n");
-	system("/sbin/wifi");
-	//usleep(500000);
-	sleep(2);
+	if (bWirelessConfigChanged == 1 || bForce == 1) {
+		_Print(1, "> Restarting wifi interface...\n");
+		system("/sbin/wifi");
+		//usleep(500000);
+		sleep(2);
+
+		bWirelessConfigChanged 	= 0;
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -497,8 +509,15 @@ int wdb40Tool::_GenericNetworkListTraversal(int mode, int param0)
 		if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_AP) {
 			// only look for AP wireless network
 			if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_AP) {
-				status 	= uci->SetWirelessSectionDisable( &(*itConfig), param0, 1);
-				_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+				
+				// check if uci call is required (current enabled state is not the same as requested state)
+				if ((*itConfig).GetDisabled() != param0) {
+					status 	= uci->SetWirelessSectionDisable( &(*itConfig), param0, 1);
+					_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+
+					// note that wireless config has changed
+					bWirelessConfigChanged	= 1;
+				}
 
 				// finish the loop after the first AP network
 				break;
@@ -507,16 +526,25 @@ int wdb40Tool::_GenericNetworkListTraversal(int mode, int param0)
 		else if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA) {
 			// only look for STA wireless networks
 			if ( (*itConfig).GetNetworkMode() == WDB40_NETWORK_STA) {
-				status 	|= uci->SetWirelessSectionDisable( &(*itConfig), param0);
-				_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+
+				// check if uci call is required (current enabled state is not the same as requested state)
+				if ((*itConfig).GetDisabled() != param0) {
+					status 	|= uci->SetWirelessSectionDisable( &(*itConfig), param0);
+					_Print(3, ">>> SetWirelessSectionDisable returned %d\n", status);
+
+					// note that wireless config has changed
+					bWirelessConfigChanged	= 1;
+				}
 			}
 		}
 	} // configList loop
 
 	// GENERIC:: perform post loop action based on the mode
 	if (mode == WDB40_TOOL_TRAVERSAL_ENABLE_ALL_STA) {
-		// disable all STA: need to commit changes
-		status 	|= uci->CommitSectionChanges();
+		// disable all STA: need to commit changes (if any were made)
+		if (bWirelessConfigChanged == 1) {
+			status 	|= uci->CommitSectionChanges();
+		}
 	}
 
 	// release the uci context

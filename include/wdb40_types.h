@@ -4,6 +4,15 @@
 
 #define WDB40_MAX_STRING_SIZE			256
 
+
+// status types to check
+typedef enum e_Wdb40NetworkIntfType {
+	WDB40_NETWORK_WIRELESS 		= 0,
+	WDB40_NETWORK_INTF_WWAN,
+	WDB40_NUM_NETWORK_INTFS
+} eWdb40NetworkIntfType;
+
+
 // network modes
 typedef enum e_Wdb40NetworkMode {
 	WDB40_NETWORK_MODE_UNKNOWN 	= 0,

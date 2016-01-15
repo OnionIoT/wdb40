@@ -7,8 +7,10 @@ void usage(const char* progName)
 	printf("NEED ARGUMENT!\n");
 }
 
-// enable just the AP network, bring down all the STAs
-int initialSetup() 
+// read the UCI network configuration
+// optionall enable the AP network
+// bring down all the STAs
+int networkSetup(int bEnableAp) 
 {
 	int 		status;
 	wdb40Tool	*wdb40;
@@ -19,11 +21,53 @@ int initialSetup()
 	wdb40->SetVerbosity(verbose);
 
 
-	// wait until wireless status is up
-	status 	= wdb40->WaitUntilWirelessStatus(1);
+	/*// wait until wireless status is up
+	status 	= wdb40->WaitUntilWirelessStatus(1, WDB40_NETWORK_WIRELESS);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}*/
+
+	// read configured networks
+	status 	|= wdb40->ReadConfigNetworks(1);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
+
+	// enable AP wireless
+	if (bEnableAp == 1) {
+		status 	|= wdb40->SetApWirelessEnable(1);
+		if (status != EXIT_SUCCESS) {
+			printf("Returned ERROR!\n", status);
+		}
+	}
+
+	// disable all STA networks
+	status 	|= wdb40->SetAllStaWirelessEnable(0);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
+
+	//// reload the wifi configuration
+	status 	|= wdb40->RestartWireless();
+
+
+	// clean-up
+	delete 	wdb40;
+
+	return status;
+}
+
+// enable just the AP network, bring down all the STAs
+int disableSta() 
+{
+	int 		status;
+	wdb40Tool	*wdb40;
+
+
+	// initialize the object
+	wdb40 		= new wdb40Tool();
+	wdb40->SetVerbosity(verbose);
 
 	// read configured networks
 	status 	|= wdb40->ReadConfigNetworks(1);
@@ -55,7 +99,7 @@ int initialSetup()
 }
 
 // wait until wifi is up
-int waitUntilReady(int timeoutSeconds)
+int waitUntilReady(int statusType, int timeoutSeconds)
 {
 	int 		status;
 	wdb40Tool	*wdb40;
@@ -67,7 +111,7 @@ int waitUntilReady(int timeoutSeconds)
 
 
 	// wait until wireless status is up
-	status 	= wdb40->WaitUntilWirelessStatus(1, timeoutSeconds);
+	status 	= wdb40->WaitUntilWirelessStatus(1, statusType, timeoutSeconds);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -205,14 +249,21 @@ int main(int argc, char **argv)
 	// first arg - command
 	if (strcmp("init", argv[0]) == 0) {
 		// prep for the scan
-		status 	= initialSetup();
+		status 	= networkSetup(0);
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}
 	}
 	else if (strcmp("wait", argv[0]) == 0) {
-		// wait until everyting is ready again
-		status 	= waitUntilReady(timeout);
+		// wait until wireless device is ready again
+		status 	= waitUntilReady(WDB40_NETWORK_WIRELESS, timeout);
+		if (status != EXIT_SUCCESS) {
+			printf("Returned ERROR!\n", status);
+		}
+	}
+	else if (strcmp("waitWwan", argv[0]) == 0) {
+		// wait until network intf wwan (sta client connection) is ready again
+		status 	= waitUntilReady(WDB40_NETWORK_INTF_WWAN, timeout);
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}
@@ -225,8 +276,15 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (strcmp("connect", argv[0]) == 0) {
-		// perform the scan
+		// connect to a matched network
 		status 	= connectAttempt();
+		if (status != EXIT_SUCCESS) {
+			printf("Returned ERROR!\n", status);
+		}
+	}
+	else if (strcmp("disable", argv[0]) == 0) {
+		// Disable all client networks, enable the AP
+		status 	= networkSetup(1);
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}

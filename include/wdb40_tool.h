@@ -46,12 +46,12 @@ public:
 	int 	ScanAvailableNetworks		();
 
 	// ubus intf functions
-	int 	CheckWirelessStatus 		(int &bUp);
-	int 	WaitUntilWirelessStatus	 	(int bUp, int timeoutSeconds = WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS);
+	int 	CheckWirelessStatus 		(int &bUp, int statusType);
+	int 	WaitUntilWirelessStatus	 	(int bUp, int statusType, int timeoutSeconds = WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS);
 
 	// wdb40 functions
 	int 	CheckForConfigNetworks		(int bPrintToFile = 0);
-	int 	RestartWireless 			();
+	int 	RestartWireless 			(int bForce = 0);
 
 	void 	PrintMatchNetworks 			();	
 
@@ -83,6 +83,8 @@ private:
 	std::vector<networkInfo> 	scanList;
 	std::vector<networkInfo> 	configList;
 	std::vector<networkInfo> 	matchList;
+
+	int 		bWirelessConfigChanged;
 
 	typedef enum e_Wdb40ToolNetworkListTraversalMode {
 		WDB40_TOOL_TRAVERSAL_ENABLE_AP 	= 0,

@@ -16,8 +16,10 @@ extern "C" {
 #define UBUS_INTF_TIMEOUT_MULTIPLIER 		1000
 
 #define UBUS_INTF_NETWORK_WIRELESS_PATH 			"network.wireless"
-#define UBUS_INTF_NETWORK_WIRELESS_METHOD_STATUS 	"status"
-#define UBUS_INTF_NETWORK_WIRELESS_STATUS_ATTRIBUTE_UP 		"up"
+#define UBUS_INTF_NETWORK_INTF_WWAN_PATH 			"network.interface.wwan"
+
+#define UBUS_INTF_NETWORK_METHOD_STATUS 					"status"
+#define UBUS_INTF_NETWORK_METHOD_STATUS_ATTRIBUTE_UP 		"up"
 
 #define UBUS_INTF_VALUE_TRUE 						"1"
 #define UBUS_INTF_VALUE_FALSE 						"0"
@@ -34,7 +36,7 @@ public:
 	int 	ReadContext 				();
 	int 	ReleaseContext 				();
 
-	int 	GetNetworkWirelessUpStatus	(int &bUp);
+	int 	GetNetworkUpStatus			(int &bUp, int statusType);
 
 	// static members and functions
 	static struct blob_attr 			*receivedAttribute;

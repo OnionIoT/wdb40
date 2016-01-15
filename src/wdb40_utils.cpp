@@ -101,3 +101,23 @@ void GetEncryptionSuiteString (int input, std::string &output)
 			break;
 	}
 }
+
+std::string GetNetworkIntfString (int input)
+{
+	std::string 	output;
+
+	switch(input) {
+		case WDB40_NETWORK_WIRELESS: 
+			output 			= "device";
+			break;
+			
+		case WDB40_NETWORK_INTF_WWAN: 
+			output 			= "wwan interface";
+			break;
+		default:
+			output 			= "UNKNOWN";
+			break;
+	}
+
+	return output;
+}

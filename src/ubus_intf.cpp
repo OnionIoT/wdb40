@@ -88,12 +88,12 @@ void _receiveCallResultData(struct ubus_request *req, int type, struct blob_attr
 
 
 // check the network.wireless status
-int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
+int ubusIntf::GetNetworkUpStatus(int &bUp, int statusType)
 {
 	int 	status;
 
 	uint32_t	 	methodId;
-	std::string		group, method;
+	std::string		group, method, attributePrefix;
 
 
 	// get the context
@@ -105,8 +105,16 @@ int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
 	}
 
 	// populate the group and method
-	group 	= UBUS_INTF_NETWORK_WIRELESS_PATH;
-	method 	= UBUS_INTF_NETWORK_WIRELESS_METHOD_STATUS;
+	method 		= UBUS_INTF_NETWORK_METHOD_STATUS;
+	if (statusType == WDB40_NETWORK_WIRELESS) {
+		group 				= UBUS_INTF_NETWORK_WIRELESS_PATH;
+		attributePrefix 	= "radio0/";	// LAZAR: replace radio0 with a define/variable
+	}
+	else if (statusType == WDB40_NETWORK_INTF_WWAN) {
+		group 				= UBUS_INTF_NETWORK_INTF_WWAN_PATH;
+		attributePrefix 	= "";
+	}
+	
 
 	// lookup ubus group
 	_Print(4, "UBUS DBG: about to lookup id\n");
@@ -120,7 +128,7 @@ int ubusIntf::GetNetworkWirelessUpStatus(int &bUp)
 		// setup the static variables for the handler
 		_Print(4, "UBUS DBG: attributeName allocation\n");
 		attributeName 	= new char[WDB40_MAX_STRING_SIZE];
-		sprintf(attributeName, "radio0/%s", UBUS_INTF_NETWORK_WIRELESS_STATUS_ATTRIBUTE_UP);
+		sprintf(attributeName, "%s%s", attributePrefix.c_str(), UBUS_INTF_NETWORK_METHOD_STATUS_ATTRIBUTE_UP);
 
 		_Print(4, "UBUS DBG: about to ubus_invoke\n");
 		status 	= ubus_invoke(	ctx, methodId, method.c_str(), 					// ubus context, group id, method string

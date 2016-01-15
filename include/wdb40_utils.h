@@ -11,6 +11,8 @@ void	GetEncryptionSubtypeString		(int input, std::string &output);
 void	GetEncryptionCipherString		(int input, std::string &output);
 void	GetEncryptionSuiteString		(int input, std::string &output);
 
+std::string 	GetNetworkIntfString 	(int input);
+
 
 #endif // _WDB40_UTILS_H_
 
