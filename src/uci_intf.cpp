@@ -215,10 +215,12 @@ int uciIntf::_ParseWirelessSection(struct uci_section *s, const char* sectionNam
 
 
 		//// populate wifiNetwork object
+		_Print(3, ">>> Parsing UCI network\n");
 		network 	= new networkInfo( uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_SSID) );
 		network->SetVerbosity(1);
 
 		// find the encryption type
+		_Print(3, "   -- Parsing encryption type\n");
 		tmp 		= _ParseEncryption(	uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_ENCRYPTION) );
 		network->SetEncryptionType(tmp);
 		
@@ -226,10 +228,12 @@ int uciIntf::_ParseWirelessSection(struct uci_section *s, const char* sectionNam
 		network->SetConfigName(sectionName);
 		
 		// check if network is disabled
+		_Print(3, "   -- Parsing disabled option\n");
 		tmp 		= _ParseDisabled( uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_DISABLED) );
 		network->SetDisabled(tmp);
 
 		// find the network mode
+		_Print(3, "   -- Parsing mode option\n");
 		tmp 		= _ParseMode( uci_lookup_option_string(ctx, s, UCI_INTF_WIFI_IFACE_OPT_MODE) );
 		network->SetNetworkMode(tmp);
 
@@ -253,6 +257,11 @@ int uciIntf::_ParseEncryption(const char* input)
 	// default is unknown
 	output 		= WDB40_ENCRYPTION_UNKNOWN;
 
+	// check for valid input
+	if (input == NULL) {
+		return output;
+	}
+
 	if (strcmp(input, UCI_INTF_WIFI_IFACE_ENCRYPTION_TYPE_NONE) == 0 ) {
 		output 	= WDB40_ENCRYPTION_NONE;
 	}
@@ -273,8 +282,13 @@ int uciIntf::_ParseDisabled(const char* input)
 {
 	int output;
 
-	// default is disabled
-	output 		= WDB40_ENCRYPTION_UNKNOWN;
+	// default is enabled (no disabled option means the network is enabled)
+	output 		= 0;
+
+	// check for valid input
+	if (input == NULL) {
+		return output;
+	}
 
 	if (strcmp(input, UCI_INTF_WIFI_IFACE_DISABLED_VALUE_TRUE) == 0 ) {
 		output 	= 1;
@@ -292,6 +306,11 @@ int uciIntf::_ParseMode(const char* input)
 
 	// default is unkown
 	output 		= WDB40_NETWORK_MODE_UNKNOWN;
+
+	// check for valid input
+	if (input == NULL) {
+		return output;
+	}
 
 	if (strcmp(input, UCI_INTF_WIFI_IFACE_MODE_VALUE_AP) == 0 ) {
 		output 	= WDB40_NETWORK_AP;

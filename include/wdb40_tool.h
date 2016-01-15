@@ -63,7 +63,7 @@ public:
 
 private:
 	// private functions
-	void 	_PrintNetworkList				(std::vector<networkInfo> &networkList);
+	void 	_PrintNetworkList				(std::vector<networkInfo> &networkList, int bExtendedPrint = 0);
 
 	void 	_FilePrintNetworkList			(std::vector<networkInfo> &networkList, std::string filename, std::string path = WDB40_TOOL_FILE_PATH);
 	int 	_FileReadNetworkList			(std::vector<networkInfo> &networkList, std::string filename, std::string path = WDB40_TOOL_FILE_PATH);

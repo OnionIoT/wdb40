@@ -37,6 +37,7 @@ int wdb40Tool::ReadConfigNetworks(int bPrintToFile)
 
 	// initialize the object
 	uci 	= new uciIntf();
+	uci->SetVerbosity(verbosityLevel);
 
 	// initialize the uci backend
 	_Print(2, ">> Initializing the uci backend...\n");
@@ -51,6 +52,9 @@ int wdb40Tool::ReadConfigNetworks(int bPrintToFile)
 	// return the processed vector of networks
 	uci->GetNetworkList(configList);
 	_Print(2, ">> List has %d networks\n", configList.size() );
+	if (verbosityLevel > 2) {
+		_PrintNetworkList(configList, 1);
+	}
 
 	// print the networks to a file
 	if (bPrintToFile == 1) {
@@ -359,14 +363,19 @@ int wdb40Tool::FetchMatchNetworks()
 
 
 //// private functions
-void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> &networkList)
+void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> &networkList, int bExtendedPrint)
 {
 	for (	std::vector<networkInfo>::iterator it = networkList.begin(); 
 			it != networkList.end(); 
 			it++
 		) 
 	{
-		(*it).PrintBasic();
+		if (bExtendedPrint == 0) {
+			(*it).PrintBasic();
+		}
+		else {
+			(*it).Print();
+		}
 	}
 }
 
