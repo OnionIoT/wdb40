@@ -8,8 +8,8 @@ then
     exit
 fi
 
-localPath="wdb40d.sh"
-remotePath="/usr/bin/wdb40d"
+localPath="bin/wdb40.sh"
+remotePath="/usr/bin/wdb40"
 
 cmd="rsync -va --progress $localPath root@omega-$1.local:$remotePath"
 echo "$cmd"

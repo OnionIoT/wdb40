@@ -3,8 +3,9 @@
 ## daemon to facilitate wdb40 Wireless Network Tool
 
 # global variables
-PROG="/usr/bin/wdb40"
+PROG="/usr/bin/wdb40tool"
 INITIAL_TIMEOUT="60"
+CONNECTION_TIMEOUT="20"
 
 bBoot=0
 bVerbose=0
@@ -34,7 +35,7 @@ _ConnectToMatch() {
 	local noMatchFound=$(echo $ret | grep "Scan found no matching networks")
 
 	# check that connection is successful
-	ret=$($PROG -t 20 waitWwan)
+	ret=$($PROG -t $CONNECTION_TIMEOUT waitWwan)
 	_Print "$ret"
 	local parsed=$(echo $ret | grep -i timeout)
 
@@ -150,3 +151,5 @@ else
 	### regular sequence to run 
 	RegularSequence
 fi
+
+

@@ -1,11 +1,19 @@
-#include <test.h>
+#include <cli.h>
 
 int 	verbose;
 int 	bPrintToFile;
 
 void usage(const char* progName) 
 {
-	printf("NEED ARGUMENT!\n");
+	printf("WDB40: Making wireless connections easier\n\n");
+	printf("Valid arguments:\n");
+	printf("   init      - read network configuration, disable all client networks\n");
+	printf("   read      - read network configuration\n");
+	printf("   wait      - wait for network wireless device status to be up\n");
+	printf("   waitWwan  - wait for network wwan interface status to be up\\n");
+	printf("   scan      - scan for available networks, check for match against configured networks\n");
+	printf("   connect   - connect to a matched network\n");
+	printf("   disable   - disable all client networks, enable AP network\n");
 }
 
 // read the UCI network configuration

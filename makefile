@@ -18,6 +18,12 @@ LIBDIR := lib
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -iname "*.$(SRCEXT)" )
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+
+
+# add the C object as well
+OBJECTS += $(BUILDDIR)/blobmsg_intf.o
+
+# flags
 CXXFLAGS := -g # -Wall
 CFLAGS := -g # -Wall
 
@@ -30,11 +36,9 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 # define specific binaries to create
-APP0 := wdb40
+APP0 := wdb40tool
 TARGET := $(BINDIR)/$(APP0)
 
-# add the C object as well
-OBJECTS += $(BUILDDIR)/blobmsg_intf.o
 
 
 all: info $(TARGET)

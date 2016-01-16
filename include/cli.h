@@ -1,4 +1,4 @@
-#ifndef _WDB40_TEST_H_
+#ifndef _WDB40_CLI_H_
 #define _WDB40_TEST_H_
 
 #include <stdlib.h>
