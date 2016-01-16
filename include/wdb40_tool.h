@@ -40,10 +40,10 @@ public:
 	int 	SetApWirelessEnable 		(int bEnable);
 	int 	SetAllStaWirelessEnable		(int bEnable);
 
-	int 	EnableMatchedNetwork 		();
+	int 	EnableMatchedNetwork 		(int bPrintToFile = 0);
 
 	// iwinfo intf functions
-	int 	ScanAvailableNetworks		();
+	int 	ScanAvailableNetworks		(int bPrintToFile = 0);
 
 	// ubus intf functions
 	int 	CheckWirelessStatus 		(int &bUp, int statusType);

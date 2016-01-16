@@ -135,7 +135,7 @@ int scanNetworks()
 	wdb40->SetVerbosity(verbose);
 
 	// scan for networks
-	status 	= wdb40->ScanAvailableNetworks();
+	status 	= wdb40->ScanAvailableNetworks(1);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -180,7 +180,7 @@ int connectAttempt()
 	wdb40->PrintMatchNetworks();
 
 	// enable matched network
-	status 	= wdb40->EnableMatchedNetwork();
+	status 	= wdb40->EnableMatchedNetwork(1);
 	if (status == EXIT_SUCCESS) {
 		// restart wireless
 		status 	|= wdb40->RestartWireless();

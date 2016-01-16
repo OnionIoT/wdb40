@@ -123,7 +123,7 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 	return 	status;
 }
 
-int wdb40Tool::EnableMatchedNetwork()
+int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
 {
 	int 	status 	= EXIT_FAILURE;
 
@@ -146,6 +146,15 @@ int wdb40Tool::EnableMatchedNetwork()
 		status 	= uci->SetWirelessSectionDisable( &(matchList.at(0)), 0, 1);
 		bWirelessConfigChanged 	= 1;	// so that wifi restart is triggered
 
+		// print the rest of the matched networks to disk (if any)
+		if (bPrintToFile == 1) {
+			// remove the first element from the vector
+			matchList.erase ( matchList.begin() );
+
+			// print the rest of the vector to the file
+			_FilePrintNetworkList(matchList, WDB40_TOOL_FILE_MATCH);
+		}
+
 		// release the uci context
 		status 	|= uci->ReleaseBackend();
 
@@ -160,7 +169,7 @@ int wdb40Tool::EnableMatchedNetwork()
 
 ///// IWINFO INTF FUNCTIONS /////
 // use iwinfo intf to scan for available networks
-int wdb40Tool::ScanAvailableNetworks()
+int wdb40Tool::ScanAvailableNetworks(int bPrintToFile)
 {
 	int 	status, tmp;
 
@@ -176,7 +185,12 @@ int wdb40Tool::ScanAvailableNetworks()
 	status 	|= iw->GetScanList(scanList);
 	_Print(2, ">> Found %d networks\n", scanList.size());
 
-	_FilePrintNetworkList(scanList, WDB40_TOOL_FILE_SCAN);
+	// print the scanned networks to file
+	if (bPrintToFile == 1) {
+		_FilePrintNetworkList(scanList, WDB40_TOOL_FILE_SCAN);
+	}
+
+	// release the iwinfo backend
 	iw->ReleaseBackend();
 
 
