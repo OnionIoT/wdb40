@@ -134,14 +134,14 @@ int uciIntf::GetWirelessSectionDisable(networkInfo *network, int &bDisable)
 
 
 	// lookup the wireless section
-	_Print(2, ">> Reading '%s' disabled state... \n", wifiSection);
+	_Print(2, ">> Reading '%s' disabled state... ", wifiSection);
 	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
 		status 	= EXIT_FAILURE;
 	}
 
 	// get the disable option
 	if (sectionPtr.target == UCI_TYPE_OPTION) {
-		bDisable	= _ParseDisabled( sectionPtr.value );
+		bDisable	= _ParseDisabled( sectionPtr.o->v.string );
 		_Print(2, "State is '%d'\n", bDisable);
 
 	}
@@ -333,6 +333,7 @@ int uciIntf::_ParseDisabled(const char* input)
 	if (input == NULL) {
 		return output;
 	}
+	//_Print(3, " --- disable value is '%s'\n", input);
 
 	if (strcmp(input, UCI_INTF_WIFI_IFACE_DISABLED_VALUE_TRUE) == 0 ) {
 		output 	= 1;
