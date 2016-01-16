@@ -126,6 +126,7 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
 {
 	int 	status 	= EXIT_FAILURE;
+	int 	currentDisabledStatus;
 
 	if (matchList.size() > 0) {
 		_Print(1, "> Attempting to enable wireless network configuration...\n");
@@ -141,10 +142,19 @@ int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
 			return EXIT_FAILURE;
 		}
 
-		// attempt to connect to the first matched network
+		//// attempt to connect to the first matched network
+		// check if network is already enabled
+		status 	= uci->GetWirelessSectionDisable( &(matchList.at(0)), currentDisabledStatus);
+
+		// enable the network
 		_Print(2, ">> Enabling wireless network '%s'\n", (matchList.at(0)).GetSsid().c_str() );
 		status 	= uci->SetWirelessSectionDisable( &(matchList.at(0)), 0, 1);
-		bWirelessConfigChanged 	= 1;	// so that wifi restart is triggered
+		
+		// trigger wifi restart (only if status has changed)
+		if (status == EXIT_SUCCESS && currentDisabledStatus == 1) {
+			bWirelessConfigChanged 	= 1;
+		}
+
 
 		// print the rest of the matched networks to disk (if any)
 		if (bPrintToFile == 1) {
@@ -154,6 +164,7 @@ int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
 			// print the rest of the vector to the file
 			_FilePrintNetworkList(matchList, WDB40_TOOL_FILE_MATCH);
 		}
+
 
 		// release the uci context
 		status 	|= uci->ReleaseBackend();
