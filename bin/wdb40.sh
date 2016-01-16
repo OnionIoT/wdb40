@@ -6,6 +6,7 @@
 PROG="/usr/bin/wdb40tool"
 INITIAL_TIMEOUT="60"
 CONNECTION_TIMEOUT="20"
+SHORT_TIMEOUT="2"
 
 bBoot=0
 bVerbose=0
@@ -27,23 +28,40 @@ _Print () {
 #		if not successful:
 #			enable the AP network
 #			disable all STA networks
+# arguments:
+# 	arg1 - if set to force, will enable connect force option (wifi setup must be triggered)
 _ConnectToMatch() {
+	local OPT=""
+	local TIMEOUT="$CONNECTION_TIMEOUT"
+
+	# check for arguments
+	if [ "$1" != "" ]; then
+		if [ "$1" == "force" ]; then
+			OPT="-f"
+		fi
+	fi
+
 	# connect to first network in the match file
-	local ret=$($PROG connect)
-	_Print "$ret"
+	local ret=$($PROG $OPT connect)
+	_Print "-> CONNECT: $ret"
 	# check to see there was a connection attempt
 	local noMatchFound=$(echo $ret | grep "Scan found no matching networks")
 
+	# if there was no connection attempt, shorten the timeout
+	if [ "$noMatchFound" != "" ]; then
+		TIMEOUT="$SHORT_TIMEOUT"
+	fi
+
 	# check that connection is successful
-	ret=$($PROG -t $CONNECTION_TIMEOUT waitWwan)
-	_Print "$ret"
+	ret=$($PROG -t $TIMEOUT waitWwan)
+	_Print "-> WAITWWAN: $ret"
 	local parsed=$(echo $ret | grep -i timeout)
 
 	# check for timeout - indicating incorrect key used for network
 	if [ "$parsed" != "" ]; then
 		# disable any STA networks, enable the AP
 		ret=$($PROG disable)
-		_Print "$ret"
+		_Print "-> DISABLE: $ret"
 
 		# try the next match 
 		#	assuming that this connection attempt was to an actual network
@@ -63,7 +81,7 @@ _ConnectToMatch() {
 BootSequence () {
 	# ensure that wireless device is up
 	ret=$($PROG -t $INITIAL_TIMEOUT wait)
-	_Print "$ret"
+	_Print "-> WAIT: $ret"
 	parsed=$(echo $ret | grep -i timeout)
 
 	# check for timeout
@@ -73,21 +91,21 @@ BootSequence () {
 		#	enable AP (if any)
 		#	disable all STA networks
 		ret=$($PROG init)
-		_Print "$ret"
+		_Print "-> INIT: $ret"
 
 		# wait for wireless device to be up
 		ret=$($PROG wait)
-		_Print "$ret"
+		_Print "-> WAIT: $ret"
 		parsed=$(echo $ret | grep -i timeout)
 
 		# check for timeout
 		if [ "$parsed" == "" ]; then
 			# scan for available networks
 			ret=$($PROG scan)
-			_Print "$ret"
+			_Print "-> SCAN: $ret"
 			
 			# connect to configured network that showed up in scan
-			_ConnectToMatch
+			_ConnectToMatch "force"
 		fi
 	fi
 }
@@ -99,18 +117,18 @@ BootSequence () {
 RegularSequence () {
 	# ensure that wireless device is up (regular 10sec timeout)
 	ret=$($PROG wait)
-	_Print "$ret"
+	_Print "-> WAIT: $ret"
 	parsed=$(echo $ret | grep -i timeout)
 
 	# check for timeout
 	if [ "$parsed" == "" ]; then
 		# read configured networks
 		ret=$($PROG read)
-		_Print "$ret"
+		_Print "-> READ: $ret"
 
 		# scan for available networks
 		ret=$($PROG scan)
-		_Print "$ret"
+		_Print "-> SCAN: $ret"
 		
 		# connect to configured network that showed up in scan
 		_ConnectToMatch

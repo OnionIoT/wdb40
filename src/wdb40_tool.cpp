@@ -123,7 +123,7 @@ int wdb40Tool::SetAllStaWirelessEnable (int bEnable)
 	return 	status;
 }
 
-int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
+int wdb40Tool::EnableMatchedNetwork(int bForce, int bPrintToFile)
 {
 	int 	status 	= EXIT_FAILURE;
 	int 	currentDisabledStatus;
@@ -151,7 +151,7 @@ int wdb40Tool::EnableMatchedNetwork(int bPrintToFile)
 		status 	= uci->SetWirelessSectionDisable( &(matchList.at(0)), 0, 1);
 		
 		// trigger wifi restart (only if status has changed)
-		if (status == EXIT_SUCCESS && currentDisabledStatus == 1) {
+		if (status == EXIT_SUCCESS && currentDisabledStatus == 1 || bForce == 1) {
 			bWirelessConfigChanged 	= 1;
 		}
 

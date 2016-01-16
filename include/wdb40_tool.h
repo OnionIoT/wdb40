@@ -40,7 +40,7 @@ public:
 	int 	SetApWirelessEnable 		(int bEnable);
 	int 	SetAllStaWirelessEnable		(int bEnable);
 
-	int 	EnableMatchedNetwork 		(int bPrintToFile = 0);
+	int 	EnableMatchedNetwork 		(int bForce = 0, int bPrintToFile = 0);
 
 	// iwinfo intf functions
 	int 	ScanAvailableNetworks		(int bPrintToFile = 0);

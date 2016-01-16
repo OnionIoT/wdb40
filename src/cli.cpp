@@ -192,7 +192,7 @@ int scanNetworks()
 }
 
 // attempt to connect to a network
-int connectAttempt()
+int connectAttempt(int bForce)
 {
 	int 		status;
 	wdb40Tool	*wdb40;
@@ -212,7 +212,7 @@ int connectAttempt()
 	wdb40->PrintMatchNetworks();
 
 	// enable matched network
-	status 	= wdb40->EnableMatchedNetwork(bPrintToFile);
+	status 	= wdb40->EnableMatchedNetwork(bForce, bPrintToFile);
 	if (status == EXIT_SUCCESS) {
 		// restart wireless
 		status 	|= wdb40->RestartWireless();
@@ -236,10 +236,12 @@ int main(int argc, char **argv)
 	int 		status;
 	int 		ch;
 	int 		timeout;
+	int 		bForce;
 
 	// set defaults
 	verbose 		= 1;
 	bPrintToFile 	= 1;
+	bForce 			= 0;
 	timeout 		= WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS;
 
 	// save the program name
@@ -247,7 +249,7 @@ int main(int argc, char **argv)
 
 
 	//// parse the option arguments
-	while ((ch = getopt(argc, argv, "vqnht:")) != -1) {
+	while ((ch = getopt(argc, argv, "vqnfht:")) != -1) {
 		switch (ch) {
 		case 'v':
 			// verbose output
@@ -260,6 +262,10 @@ int main(int argc, char **argv)
 		case 't':
 			// define timeout seconds
 			timeout = atoi(optarg);
+			break;
+		case 'f':
+			// enable force
+			bForce 	= 1;
 			break;
 		case 'n':
 			// do not print to file
@@ -319,7 +325,7 @@ int main(int argc, char **argv)
 	}
 	else if (strcmp("connect", argv[0]) == 0) {
 		// connect to a matched network
-		status 	= connectAttempt();
+		status 	= connectAttempt(bForce);
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}
