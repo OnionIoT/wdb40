@@ -130,7 +130,9 @@ int disableSta()
 	return status;
 }
 
-// wait until wifi is up
+// wait until wifi device/intf is up
+//	wireless device 	- overall radio0 is up
+// 	wwan intf 			- if client connection is up
 int waitUntilReady(int statusType, int timeoutSeconds)
 {
 	int 		status;
@@ -192,6 +194,7 @@ int scanNetworks()
 }
 
 // attempt to connect to a network
+//	bForce 	- makes it mandatory to run wifi restart after setting up matched network
 int connectAttempt(int bForce)
 {
 	int 		status;
@@ -221,8 +224,6 @@ int connectAttempt(int bForce)
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
-
-	// LAZAR: add writing the rest of the matches to file
 
 	// clean-up
 	delete 	wdb40;
@@ -287,7 +288,6 @@ int main(int argc, char **argv)
 	}
 
 	//// parse the arguments
-	// first arg - command
 	if (strcmp("init", argv[0]) == 0) {
 		// prep for the scan
 		status 	= networkSetup(0);	// do not enable the AP
@@ -296,7 +296,7 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (strcmp("read", argv[0]) == 0) {
-		// prep for the scan
+		// read network config data
 		status 	= readNetworkConfig();
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);

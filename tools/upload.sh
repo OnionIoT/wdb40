@@ -8,6 +8,7 @@ then
     exit
 fi
 
+##
 localPath="bin/wdb40.sh"
 remotePath="/usr/bin/wdb40"
 
@@ -15,3 +16,11 @@ cmd="rsync -va --progress $localPath root@omega-$1.local:$remotePath"
 echo "$cmd"
 eval "$cmd"
 
+
+##
+localPath="init.d/wdb40d.sh"
+remotePath="/etc/init.d/wdb40d"
+
+cmd="rsync -va --progress $localPath root@omega-$1.local:$remotePath"
+echo "$cmd"
+eval "$cmd"
