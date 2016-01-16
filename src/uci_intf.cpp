@@ -111,6 +111,48 @@ int uciIntf::ReadWirelessConfig()
 
 //// UCI action functions
 // change the disabled option in a wireless section
+int uciIntf::GetWirelessSectionDisable(networkInfo *network, int &bDisable)
+{
+	int 			status;
+	std::string 	configName;
+
+	char 	*wifiSection 	= new char[WDB40_MAX_STRING_SIZE];
+
+	// find the section config name to use
+	if ( strcmp(network->GetConfigName().c_str(), NETWORK_INFO_DEFAULT_NONE) != 0) {
+		// uci section name is known
+		configName 	= network->GetConfigName();
+	}
+	else {
+		// need to find the uci config name
+		_Print(2, ">> Searching for section name that matches network ssid\n");
+		status 	= _SearchForSection(network->GetSsid(), configName);
+	}
+
+	// create the full uci search string
+	sprintf(wifiSection, "%s.%s.disabled", UCI_INTF_WIFI_PACKAGE, configName.c_str() );
+
+
+	// lookup the wireless section
+	_Print(2, ">> Reading '%s' disabled state... \n", wifiSection);
+	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
+		status 	= EXIT_FAILURE;
+	}
+
+	// get the disable option
+	if (sectionPtr.target == UCI_TYPE_OPTION) {
+		bDisable	= _ParseDisabled( sectionPtr.value );
+		_Print(2, "State is '%d'\n", bDisable);
+
+	}
+
+	// clean-up
+	delete 	wifiSection;
+
+	return 	status;
+}
+
+// change the disabled option in a wireless section
 int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int bCommit)
 {
 	int 			status;
@@ -150,12 +192,12 @@ int uciIntf::SetWirelessSectionDisable(networkInfo *network, int bDisable, int b
 		if ((uci_set(ctx, &sectionPtr) != UCI_OK) || (sectionPtr.o==NULL || sectionPtr.o->v.string==NULL)) {
 			_Print(1, "> ERROR: uci set command failed!\n");
 			status 	= EXIT_FAILURE;
-        }
+		}
 
-        // commit the change
-        if (bCommit == 1 && status == EXIT_SUCCESS) {
-	        status 	= CommitSectionChanges();
-    	}
+		// commit the change
+		if (bCommit == 1 && status == EXIT_SUCCESS) {
+			status 	= CommitSectionChanges();
+		}
 	}
 
 	// clean-up
@@ -250,6 +292,7 @@ int uciIntf::_ParseWirelessSection(struct uci_section *s, const char* sectionNam
 	return EXIT_FAILURE;
 }
 
+// returns enum value for wifi encryption type
 int uciIntf::_ParseEncryption(const char* input)
 {
 	int output;
@@ -278,6 +321,7 @@ int uciIntf::_ParseEncryption(const char* input)
 	return output;
 }
 
+// returns int 0 or 1 based on string input "0" or "1"
 int uciIntf::_ParseDisabled(const char* input)
 {
 	int output;
@@ -300,6 +344,7 @@ int uciIntf::_ParseDisabled(const char* input)
 	return output;
 }
 
+// returns enum value for wifi network mode (ap or sta)
 int uciIntf::_ParseMode(const char* input)
 {
 	int output;

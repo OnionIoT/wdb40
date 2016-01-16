@@ -50,6 +50,7 @@ public:
 	int 	ProcessConfigData		();
 
 	int 	SetWirelessSectionDisable		(networkInfo *network, int bDisable, int bCommit = 0);
+	int 	GetWirelessSectionDisable		(networkInfo *network, int &bDisable);
 	int 	CommitSectionChanges	();
 
 
