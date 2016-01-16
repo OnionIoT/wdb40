@@ -1,6 +1,7 @@
 #include <test.h>
 
-int verbose;
+int 	verbose;
+int 	bPrintToFile;
 
 void usage(const char* progName) 
 {
@@ -8,7 +9,30 @@ void usage(const char* progName)
 }
 
 // read the UCI network configuration
-// optionall enable the AP network
+int readNetworkConfig() 
+{
+	int 		status;
+	wdb40Tool	*wdb40;
+
+
+	// initialize the object
+	wdb40 		= new wdb40Tool();
+	wdb40->SetVerbosity(verbose);
+
+	// read configured networks
+	status 	|= wdb40->ReadConfigNetworks(bPrintToFile);
+	if (status != EXIT_SUCCESS) {
+		printf("Returned ERROR!\n", status);
+	}
+
+	// clean-up
+	delete 	wdb40;
+
+	return status;
+}
+
+// read the UCI network configuration
+// optionally enable the AP network
 // bring down all the STAs
 int networkSetup(int bEnableAp) 
 {
@@ -28,7 +52,7 @@ int networkSetup(int bEnableAp)
 	}*/
 
 	// read configured networks
-	status 	|= wdb40->ReadConfigNetworks(1);
+	status 	|= wdb40->ReadConfigNetworks(bPrintToFile);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -70,7 +94,7 @@ int disableSta()
 	wdb40->SetVerbosity(verbose);
 
 	// read configured networks
-	status 	|= wdb40->ReadConfigNetworks(1);
+	status 	|= wdb40->ReadConfigNetworks(bPrintToFile);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -135,7 +159,7 @@ int scanNetworks()
 	wdb40->SetVerbosity(verbose);
 
 	// scan for networks
-	status 	= wdb40->ScanAvailableNetworks(1);
+	status 	= wdb40->ScanAvailableNetworks(bPrintToFile);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 	}
@@ -147,7 +171,7 @@ int scanNetworks()
 	}
 
 	// check configured networks against the scanned networks
-	status 	= wdb40->CheckForConfigNetworks(1);
+	status 	= wdb40->CheckForConfigNetworks(bPrintToFile);
 	if (status != EXIT_SUCCESS) {
 		printf("Returned ERROR!\n", status);
 		return 0;
@@ -180,7 +204,7 @@ int connectAttempt()
 	wdb40->PrintMatchNetworks();
 
 	// enable matched network
-	status 	= wdb40->EnableMatchedNetwork(1);
+	status 	= wdb40->EnableMatchedNetwork(bPrintToFile);
 	if (status == EXIT_SUCCESS) {
 		// restart wireless
 		status 	|= wdb40->RestartWireless();
@@ -206,17 +230,16 @@ int main(int argc, char **argv)
 	int 		timeout;
 
 	// set defaults
-	verbose 	= 1;
-	timeout 	= WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS;
+	verbose 		= 1;
+	bPrintToFile 	= 1;
+	timeout 		= WDB40_TOOL_TIMEOUT_DEFAULT_SECONDS;
 
 	// save the program name
-	progname 	= argv[0];	
+	progname 		= argv[0];	
 
-	// save the program name
-	progname 	= argv[0];	
 
 	//// parse the option arguments
-	while ((ch = getopt(argc, argv, "vqht:")) != -1) {
+	while ((ch = getopt(argc, argv, "vqnht:")) != -1) {
 		switch (ch) {
 		case 'v':
 			// verbose output
@@ -229,6 +252,10 @@ int main(int argc, char **argv)
 		case 't':
 			// define timeout seconds
 			timeout = atoi(optarg);
+			break;
+		case 'n':
+			// do not print to file
+			bPrintToFile 	= 0;
 			break;
 		default:
 			usage(progname);
@@ -249,7 +276,14 @@ int main(int argc, char **argv)
 	// first arg - command
 	if (strcmp("init", argv[0]) == 0) {
 		// prep for the scan
-		status 	= networkSetup(0);
+		status 	= networkSetup(0);	// do not enable the AP
+		if (status != EXIT_SUCCESS) {
+			printf("Returned ERROR!\n", status);
+		}
+	}
+	else if (strcmp("read", argv[0]) == 0) {
+		// prep for the scan
+		status 	= readNetworkConfig();
 		if (status != EXIT_SUCCESS) {
 			printf("Returned ERROR!\n", status);
 		}
@@ -293,88 +327,6 @@ int main(int argc, char **argv)
 		usage(progname);
 	}
 
-	
-
-	
-	
-
-	
-
-
-/*
-	wdb40Tool	*wdb40;
-
-	// initialize the object
-	wdb40 		= new wdb40Tool();
-	wdb40->SetVerbosity(2);
-
-	//// TESTING WDB40 TOOL
-	// initialize the object
-	wdb40 		= new wdb40Tool();
-	wdb40->SetVerbosity(2);
-
-
-	// wait until wireless status is up
-	status 	= wdb40->WaitUntilWirelessStatus(1);
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-	// read configured networks
-	status 	= wdb40->ReadConfigNetworks();
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-	return 0;
-
-	// enable AP wireless
-	status 	= wdb40->SetApWirelessEnable(1);
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-	// disable all STA networks
-	status 	= wdb40->SetAllStaWirelessEnable(0);
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-	
-	//// reload the wifi configuration
-	printf("\n");
-	status 	= wdb40->RestartWireless();
-
-
-	//// wait until wireless status is up
-	status 	= wdb40->WaitUntilWirelessStatus(1);
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-
-	//// scan for networks
-	status 	= wdb40->ScanAvailableNetworks();
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-
-	// check configured networks against the scanned networks
-	status 	= wdb40->CheckForConfigNetworks();
-	if (status != EXIT_SUCCESS) {
-		printf("Returned ERROR!\n", status);
-		return 0;
-	}
-
-
-	// cleanup
-	delete wdb40;*/
 
 	return 0;
 }

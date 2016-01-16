@@ -68,6 +68,7 @@ BootSequence () {
 	# check for timeout
 	if [ "$parsed" == "" ]; then
 		# perform init sequence:
+		# 	read configured networks
 		#	enable AP (if any)
 		#	disable all STA networks
 		ret=$($PROG init)
@@ -80,6 +81,7 @@ BootSequence () {
 
 		# check for timeout
 		if [ "$parsed" == "" ]; then
+			# scan for available networks
 			ret=$($PROG scan)
 			_Print "$ret"
 			
@@ -101,6 +103,11 @@ RegularSequence () {
 
 	# check for timeout
 	if [ "$parsed" == "" ]; then
+		# read configured networks
+		ret=$($PROG read)
+		_Print "$ret"
+
+		# scan for available networks
 		ret=$($PROG scan)
 		_Print "$ret"
 		
