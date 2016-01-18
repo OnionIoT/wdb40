@@ -2,20 +2,27 @@
 
 ## script to setup uci wireless configuration for use with wdb40 utility
 
+. /usr/share/libubox/jshn.sh
+
+
 ### global variables
 # options
 bVerbose=0
 
 #commands
+bCmd=0
 bCmdAdd=0
+bCmdDisable=0
 bCmdRemove=0
+bCmdPriority=0
+
 
 #parameters
 bApNetwork=0
 
 
-########################
-##### Functions #####
+#############################
+##### General Functions #####
 # find total number of configured wifi networks
 # 	returns value via echo
 _FindNumNetworks () {
@@ -175,6 +182,22 @@ _AddWifiUciSection () {
 	fi
 }
 
+# disable a uci wifi network section
+#	$1 - iface number
+_DisableWifiUciSection () {
+
+	# check the argument
+	if [ $1 -ge 0 ]; then
+		# ensure that iface exists
+		local iface=$(uci -q get wireless.\@wifi-iface[$1])
+		if [ "$iface" == "wifi-iface" ]; then
+			echo "> Disabling '$ssid' network"
+			uci set wireless.@wifi-iface[$1].disabled='1'
+			uci commit wireless
+		fi
+	fi
+}
+
 # remove a uci section that defines a wifi network 
 #	$1 - iface number
 _DeleteWifiUciSection () {
@@ -190,6 +213,309 @@ _DeleteWifiUciSection () {
 			uci commit wireless
 		fi
 	fi
+}
+
+# reorder a specified uci wifi section
+#	$1 	- iface number
+# 	$2 	- desired order number in uci config
+# 	$3 	- priority number in terms of other networks (optional)
+_ReorderWifiUciSection () {
+	# check the argument
+	if [ $1 -ge 0 ]; then
+		# ensure that iface exists
+		local iface=$(uci -q get wireless.\@wifi-iface[$1])
+		if [ "$iface" == "wifi-iface" ]; then
+			# print a message
+			if [ "$3" != "" ]; then
+				echo "> Shifting '$ssid' priority to $3"
+			else
+				echo "> Shifting '$ssid' priority"
+			fi
+
+			# perform the reorder
+			uci reorder wireless.@wifi-iface[$1]=$2
+			uci commit wireless
+		fi
+	fi
+}
+
+# change the priority of a network (by changing the uci wireless section order)
+#	$1 	- network section id
+#	$2 	- argument for moving the network
+_SetNetworkPriority () {
+	local id=$1
+	local argument=$2
+	## find the network's current priority
+	local currPriority=$(($id + 1))
+
+	## find the top priority
+	# find the ap network
+	local apId=$(_FindApNetwork)
+	local topPriority=0
+	
+	if [ $apId == -1 ]; then
+		# no AP network, top priority spot is 1 (radio0 is spot 0)
+		topPriority=1
+	else
+		# AP network present, top priority spot is 2 (radio0 is spot 0, AP is spot 1)
+		topPriority=2
+	fi
+
+	## find the lowest priority
+	local bottomPriority=$(_FindNumNetworks)
+
+
+	## find the shift in priority
+	if [ "$argument" == "up" ]; then
+		desiredPriority=$(($currPriority - 1))
+	elif [ "$argument" == "down" ]; then
+		desiredPriority=$(($currPriority + 1))
+	fi
+
+	## find the new human-readable priority
+	local hmnPriority=$(($desiredPriority - $topPriority + 1))
+
+	# check that shift is valid
+	if 	[ $desiredPriority -lt $topPriority ] ||
+		[ $desiredPriority -gt $bottomPriority ];
+	then
+		echo "> ERROR: Invalid priority shift requested"
+	else
+		_ReorderWifiUciSection $id $desiredPriority $hmnPriority
+	fi
+}
+
+
+
+################################
+##### User Input Functions #####
+# read WPA settings from json data
+_UserInputJsonReadNetworkAuthPsk () {
+	local bFoundType1=0
+	local bFoundType2=0
+	local type=""
+
+	# check the wpa object
+	json_get_type type wpa
+
+	# read the wpa object
+	if [ "$type" == "array" ]
+	then
+		# select the wpa object
+		json_select wpa
+
+		# find all the values
+		json_get_values values
+
+		# read all elements
+		for value in $values
+		do
+			# parse value
+			if [ $value == 1 ]
+			then
+				bFoundType1=1
+			elif [ $value == 2 ]
+			then
+				bFoundType2=1
+			fi
+		done
+
+		# return to encryption object
+		json_select ..
+
+		# select the authentication type based on the wpa values that were found
+		if [ $bFoundType1 == 1 ]
+		then
+			auth="psk"
+		fi
+		if [ $bFoundType2 == 1 ]
+		then
+			# wpa2 overrides wpa
+			auth="psk2"
+		fi
+
+	fi
+}
+
+# read network encryption type from json data from iwinfo scan
+_UserInputJsonReadNetworkAuth () {
+	# select the encryption object
+	local type=""
+	json_get_type type encryption
+
+	# read the encryption object
+	if [ "$type" == "object" ]
+	then
+		# select the encryption object
+		json_select encryption
+
+		# read the authentication object type
+		json_get_type type authentication
+		if [ "$type" != "" ]
+		then
+			# read the authentication type
+			json_select authentication
+			json_get_keys auth_arr
+			
+			json_get_values auth_type 
+			json_select ..
+
+			# read psk specifics
+			if [ "$auth_type" == "psk" ]
+			then
+				#DBG
+				echo "reading psk from json"
+				_UserInputJsonReadNetworkAuthPsk
+			else
+				echo "reading auth type $auth_type"
+				auth=$auth_type
+			fi
+		else
+			# no encryption, open network
+			echo "no encryption"
+			auth="none"
+		fi
+	else
+		# no encryption, open network
+		auth="none"
+	fi
+}
+
+# manually read network authentication from user
+_UserInputReadNetworkAuth () {
+	echo ""
+	echo "Select network authentication type:"
+	echo "1) WPA2"
+	echo "2) WPA"
+	echo "3) WEP"
+	echo "4) none"
+	echo ""
+	echo -n "Selection: "
+	read input
+	
+
+	case "$input" in
+    	1)
+			auth="psk2"
+	    ;;
+	    2)
+			auth="psk"
+	    ;;
+	    3)
+			auth="wep"
+	    ;;
+	    4)
+			auth="none"
+	    ;;
+	esac
+
+}
+
+
+# scan wifi networks, display for user, allow them to pick one
+_UserInputScanWifi () {
+	# run the scan command and get the response
+	local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+	
+	# read the json response
+	json_load "$RESP"
+	
+	# check that array is returned  
+	json_get_type type results
+
+	# find all possible keys
+	json_select results
+	json_get_keys keys
+	
+	
+	if 	[ "$type" == "array" ] &&
+		[ "$keys" != "" ];
+	then
+		echo ""
+		echo "Select Wifi network:"
+		
+		# loop through the keys
+		for key in $keys
+		do
+			# select the array element
+			json_select $key
+			
+			# find the ssid
+			json_get_var cur_ssid ssid
+			if [ "$cur_ssid" == "" ]
+			then
+				cur_ssid="[hidden]"
+			fi
+			echo "$key) $cur_ssid"
+
+			# return to array top
+			json_select ..
+		done
+
+		# read the input
+		echo ""
+		echo -n "Selection: "
+		read input;
+		
+		# get the selected ssid
+		json_select $input
+		json_get_var ssid ssid
+		
+		echo "Network: $ssid"
+
+		# detect the encryption type 
+		_UserInputJsonReadNetworkAuth
+
+		echo "Authentication type: $auth"
+	else
+		wifi
+		bScanFailed=1
+		echo "> ERROR: Scan failed, try again"
+	fi
+}
+
+# main function to read user input
+_UserInputMain () {
+	bScanFailed=0
+	echo "Onion Omega Wifi Setup"
+	echo ""
+	echo "Select from the following:"
+	echo "1) Scan for Wifi networks"
+	echo "2) Type network info"
+	echo "q) Exit"
+	echo ""
+	echo -n "Selection: "
+	read input
+
+	# choice between scanning 
+	if [ $input == 1 ]
+	then
+		# perform the scan and select network
+		echo "Scanning for wifi networks..."
+		_UserInputScanWifi
+
+	elif [ $input == 2 ]
+	then
+		# manually read the network name
+		echo -n "Enter network name: "
+		read ssid;
+
+		# read the authentication type
+		_UserInputReadNetworkAuth
+	else
+		echo "Bye!"
+		exit
+	fi
+
+	# read the network password
+	if 	[ "$auth" != "none" ] &&
+		[ $bScanFailed == 0 ];
+	then
+		echo -n "Enter password: "
+		read password
+	fi
+
+	echo ""
 }
 
 
@@ -208,11 +534,23 @@ do
 		;;
 		# commands
     	-add|add|-edit|edit)
+			bCmd=1
 			bCmdAdd=1
 			shift
 		;;
+		-disable|disable)
+			bCmd=1
+			bCmdDisable=1
+			shift
+		;;
 		-remove|remove)
+			bCmd=1
 			bCmdRemove=1
+			shift
+		;;
+		-priority|priority)
+			bCmd=1
+			bCmdPriority=1
 			shift
 		;;
 		# parameters
@@ -231,9 +569,9 @@ do
 			auth=$1
 			shift
 		;;
-		-priority|priority)
+		-move|move)
 			shift
-			priorityId=$1
+			priorityMove=$1
 			shift
 		;;
 	    *)
@@ -242,6 +580,19 @@ do
 		;;
 	esac
 done
+
+
+## user input ##
+if [ $bCmd == 0 ]; then
+	_UserInputMain
+
+	# enable the add command if user input was successful (ssid and auth are defined)
+	if 	[ "$ssid" != "" ] &&
+		[ "$auth" != "" ];
+	then
+		bCmdAdd=1
+	fi
+fi
 
 
 ## parameter processing
@@ -265,10 +616,28 @@ if [ $bCmdAdd == 1 ]; then
 	# add or edit the uci entry
 	_AddWifiUciSection $id $networkType
 
+elif [ $bCmdDisable == 1 ]; then
+	# only disable existing networks
+	if [ $id != -1 ]; then
+		_DisableWifiUciSection $id
+	fi
+
 elif [ $bCmdRemove == 1 ]; then
 	# only remove existing networks
 	if [ $id != -1 ]; then
 		_DeleteWifiUciSection $id
 	fi
+
+elif [ $bCmdPriority == 1 ]; then
+	# only move existing network
+	if [ $id != -1 ]; then
+		_SetNetworkPriority $id $priorityMove
+	fi 
+fi # command if else statement
+
+
+# check that network was found
+if [ $id == -1 ]; then
+	echo "> ERROR: specified ssid not in the database"
 fi
 
