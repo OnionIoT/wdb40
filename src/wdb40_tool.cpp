@@ -62,7 +62,7 @@ int wdb40Tool::ReadConfigNetworks(int bPrintToFile)
 
 	// print the networks to a file
 	if (bPrintToFile == 1) {
-		_FilePrintNetworkList(configList, WDB40_TOOL_FILE_CONFIG);
+		_FilePrintNetworkList(configList, WDB40_TOOL_FILE_CONFIG, WDB40_TOOL_FILE_PATH, 1);
 	}
 
 	// release the uci context
@@ -416,7 +416,7 @@ void wdb40Tool::_PrintNetworkList(std::vector<networkInfo> &networkList, int bEx
 	}
 }
 
-void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path)
+void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path, int bOnlyStaNetworks)
 {
 	char 			filePath[WDB40_MAX_STRING_SIZE];
 	std::ofstream 	file;
@@ -432,7 +432,12 @@ void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std
 				it++
 			) 
 		{
-			(*it).FilePrintBasic(file);
+			if 	(	bOnlyStaNetworks == 0 ||
+					(bOnlyStaNetworks == 1 && (*it).GetNetworkMode() == WDB40_NETWORK_STA)
+				)
+			{
+				(*it).FilePrintBasic(file);
+			}
 		}
 	}
 
