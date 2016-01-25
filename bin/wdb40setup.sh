@@ -113,6 +113,32 @@ _FindApNetwork () {
 	echo $id
 }
 
+# find a networks SSID from the id
+#	$1	- network id
+_FindNetworkSsid () {
+	local name=$(uci -q get wireless.\@wifi-iface[$1].ssid)
+
+	echo $name
+}
+
+# Normalize the authentication input
+_NormalizeAuthInput () {
+	case "$auth" in
+		psk2|PSK2|wpa2|WPA2)
+			auth="psk2"
+		;;
+		psk|PSK|wpa|WPA)
+			auth="psk"
+		;;
+		wep|WEP)
+			auth="wep"
+		;;
+		none|*)
+			auth="none"
+		;;
+	esac
+}
+
 # Add/edit a uci section for a wifi network
 #	$1 	- interface number
 #	$2 	- interface type "ap" or "sta"
@@ -157,22 +183,19 @@ _AddWifiUciSection () {
 	case "$auth" in
 		psk|psk2)
 			uci set wireless.@wifi-iface[$id].key="$password"
-	    ;;
-	    wep)
+		;;
+		wep)
 			uci set wireless.@wifi-iface[$id].key=1
 			uci set wireless.@wifi-iface[$id].key1="$password"
-	    ;;
-	    none)
+		;;
+		none|*)
 			# set no keys for open networks, delete any existing ones
 			local key=$(uci -q get wireless.\@wifi-iface[$id].key)
 
 			if [ "$key" != "" ]; then
 				uci delete wireless.@wifi-iface[$id].key
 			fi
-	    ;;
-	    *)
-			# invalid authorization
-			commit=0
+		;;
 	esac
 
 
@@ -277,7 +300,8 @@ _SetNetworkPriority () {
 
 	# check that shift is valid
 	if 	[ $desiredPriority -lt $topPriority ] ||
-		[ $desiredPriority -gt $bottomPriority ];
+		[ $desiredPriority -gt $bottomPriority ] ||
+		[ $currPriority -lt $topPriority ];
 	then
 		echo "> ERROR: Invalid priority shift requested"
 	else
@@ -363,11 +387,8 @@ _UserInputJsonReadNetworkAuth () {
 			# read psk specifics
 			if [ "$auth_type" == "psk" ]
 			then
-				#DBG
-				echo "reading psk from json"
 				_UserInputJsonReadNetworkAuthPsk
 			else
-				echo "reading auth type $auth_type"
 				auth=$auth_type
 			fi
 		else
@@ -520,8 +541,8 @@ _UserInputMain () {
 
 
 
-########################
-##### Main Program #####
+###########################
+##### Parse Arguments #####
 
 # parse arguments
 while [ "$1" != "" ]
@@ -530,6 +551,10 @@ do
 		# options
 		-v|--v|-verbose|verbose)
 			bVerbose=1
+			shift
+		;;
+		-ap|--ap|accesspoint|-accesspoint|--accesspoint)
+			bApNetwork=1
 			shift
 		;;
 		# commands
@@ -582,6 +607,11 @@ do
 done
 
 
+
+########################
+########################
+##### Main Program #####
+
 ## user input ##
 if [ $bCmd == 0 ]; then
 	_UserInputMain
@@ -598,15 +628,21 @@ fi
 ## parameter processing
 if [ $bApNetwork == 1 ]; then
 	networkType="ap"
+	id=$(_FindApNetwork)
+	ssid=$(_FindNetworkSsid)
 else
 	networkType="sta"
+	# check if network already exists in configuration
+	id=$(_FindNetworkBySsid "$ssid")
+fi
+
+if [ "$auth" != "" ]; then
+	_NormalizeAuthInput
 fi
 
 
-## commands
-# check if network already exists in configuration
-id=$(_FindNetworkBySsid "$ssid")
 
+## commands
 if [ $bCmdAdd == 1 ]; then
 	# if it doesn't already exist, add a new section
 	if [ $id == -1 ]; then
@@ -615,6 +651,11 @@ if [ $bCmdAdd == 1 ]; then
 
 	# add or edit the uci entry
 	_AddWifiUciSection $id $networkType
+
+	# set new AP networks to top in list
+	if [ $bApNetwork == 1 ]; then
+		_ReorderWifiUciSection $id 1
+	fi
 
 elif [ $bCmdDisable == 1 ]; then
 	# only disable existing networks
