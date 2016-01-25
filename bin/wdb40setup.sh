@@ -13,6 +13,7 @@ bVerbose=0
 bCmd=0
 bCmdAdd=0
 bCmdDisable=0
+bCmdEnable=0
 bCmdRemove=0
 bCmdPriority=0
 
@@ -207,15 +208,23 @@ _AddWifiUciSection () {
 
 # disable a uci wifi network section
 #	$1 - iface number
+#	$2 - value to set to disabled option (is 1 by default)
 _DisableWifiUciSection () {
+	local param="1"
+	local action="Disabling"
+
+	if [ "$2" == "0" ]; then
+		param="0"
+		action="Enabling"
+	fi
 
 	# check the argument
 	if [ $1 -ge 0 ]; then
 		# ensure that iface exists
 		local iface=$(uci -q get wireless.\@wifi-iface[$1])
 		if [ "$iface" == "wifi-iface" ]; then
-			echo "> Disabling '$ssid' network"
-			uci set wireless.@wifi-iface[$1].disabled='1'
+			echo "> $action '$ssid' network"
+			uci set wireless.@wifi-iface[$1].disabled="$param"
 			uci commit wireless
 		fi
 	fi
@@ -568,6 +577,11 @@ do
 			bCmdDisable=1
 			shift
 		;;
+		-enable|enable)
+			bCmd=1
+			bCmdEnable=1
+			shift
+		;;
 		-remove|remove)
 			bCmd=1
 			bCmdRemove=1
@@ -629,7 +643,13 @@ fi
 if [ $bApNetwork == 1 ]; then
 	networkType="ap"
 	id=$(_FindApNetwork)
-	ssid=$(_FindNetworkSsid)
+	
+	if 	[ $id != -1 ] &&
+		[ "$ssid" == "" ]; 
+	then
+		ssid=$(_FindNetworkSsid)
+	fi
+	
 else
 	networkType="sta"
 	# check if network already exists in configuration
@@ -661,6 +681,12 @@ elif [ $bCmdDisable == 1 ]; then
 	# only disable existing networks
 	if [ $id != -1 ]; then
 		_DisableWifiUciSection $id
+	fi
+
+elif [ $bCmdEnable == 1 ]; then
+	# only enable existing networks
+	if [ $id != -1 ]; then
+		_DisableWifiUciSection $id 0
 	fi
 
 elif [ $bCmdRemove == 1 ]; then
