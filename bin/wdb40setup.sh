@@ -8,6 +8,8 @@
 ### global variables
 # options
 bVerbose=0
+bJson=0
+bError=0
 
 #commands
 bCmd=0
@@ -26,6 +28,43 @@ bApNetwork=0
 
 #############################
 ##### General Functions #####
+# initialize the json
+_Init () {
+	if [ $bJson == 1 ]; then
+		# json setup      
+		json_init
+	fi
+}
+
+# prints a message, taking json output into account
+#	$1	- the message to print
+#	$2	- the json index string
+_Print () {
+	if [ $bJson == 0 ]; then
+		echo $1
+	else 
+		json_add_string "$2" "$1"
+	fi
+}
+
+# set an error flag
+_SetError () {
+	bError=1
+}
+
+# close and print the json
+_Close () {
+	if [ $bJson == 1 ]; then
+		# print the error status
+		local output=$((!$bError))
+		json_add_boolean "success" $output
+
+		# print the json
+		json_dump
+	fi
+}
+
+
 # find total number of configured wifi networks
 # 	returns value via echo
 _FindNumNetworks () {
@@ -117,6 +156,7 @@ _FindApNetwork () {
 }
 
 # find a networks SSID from the id
+#	returns value via echo
 #	$1	- network id
 _FindNetworkSsid () {
 	local name=$(uci -q get wireless.\@wifi-iface[$1].ssid)
@@ -125,6 +165,7 @@ _FindNetworkSsid () {
 }
 
 # Normalize the authentication input
+#	modifies the global auth variable
 _NormalizeAuthInput () {
 	case "$auth" in
 		psk2|PSK2|wpa2|WPA2)
@@ -163,15 +204,15 @@ _AddWifiUciSection () {
 	# perform the type specific setup
 	if [ "$networkType" = "sta" ]; then
 		if [ $bNew == 1 ]; then
-			echo "> Adding '$ssid' network to database (priority: $id) "
+			_Print "> Adding '$ssid' network to database (priority: $id) " "output"
 		else
-			echo "> Editing '$ssid' network (priority: $id)"
+			_Print "> Editing '$ssid' network (priority: $id)" "output"
 		fi
 		# use UCI to set the network to client mode and wwan
 		uci set wireless.@wifi-iface[$id].mode="sta"
 		uci set wireless.@wifi-iface[$id].network="wwan"
 	elif [ "$networkType" = "ap" ]; then
-		echo "> Setting up $ssid Access Point as network $id"
+		_Print "> Setting up $ssid Access Point as network $id" "output"
 		# use UCI to set the network to access-point mode and wlan
 		uci set wireless.@wifi-iface[$id].mode="ap"
 		uci set wireless.@wifi-iface[$id].network="wlan"
@@ -225,7 +266,7 @@ _DisableWifiUciSection () {
 		# ensure that iface exists
 		local iface=$(uci -q get wireless.\@wifi-iface[$1])
 		if [ "$iface" == "wifi-iface" ]; then
-			echo "> $action '$ssid' network"
+			_Print "> $action '$ssid' network" "output"
 			uci set wireless.@wifi-iface[$1].disabled="$param"
 			uci commit wireless
 		fi
@@ -242,7 +283,7 @@ _DeleteWifiUciSection () {
 		# ensure that iface exists
 		local iface=$(uci -q get wireless.\@wifi-iface[$1])
 		if [ "$iface" == "wifi-iface" ]; then
-			echo "> Removing '$ssid' network from database"
+			_Print "> Removing '$ssid' network from database" "output"
 			uci delete wireless.@wifi-iface[$1]
 			uci commit wireless
 		fi
@@ -261,9 +302,9 @@ _ReorderWifiUciSection () {
 		if [ "$iface" == "wifi-iface" ]; then
 			# print a message
 			if [ "$3" != "" ]; then
-				echo "> Shifting '$ssid' priority to $3"
+				_Print "> Shifting '$ssid' priority to $3" "output"
 			else
-				echo "> Shifting '$ssid' priority"
+				_Print "> Shifting '$ssid' priority" "output"
 			fi
 
 			# perform the reorder
@@ -314,7 +355,8 @@ _SetNetworkPriority () {
 		[ $desiredPriority -gt $bottomPriority ] ||
 		[ $currPriority -lt $topPriority ];
 	then
-		echo "> ERROR: Invalid priority shift requested"
+		_Print "> ERROR: Invalid priority shift requested" "error"
+		_SetError
 	else
 		_ReorderWifiUciSection $id $desiredPriority $hmnPriority
 	fi
@@ -490,7 +532,6 @@ _UserInputJsonReadNetworkAuth () {
 			fi
 		else
 			# no encryption, open network
-			echo "no encryption"
 			auth="none"
 		fi
 	else
@@ -650,6 +691,10 @@ do
 			bVerbose=1
 			shift
 		;;
+		-j|--j|-json|--json|json)
+			bJson=1
+			shift
+		;;
 		-ap|--ap|accesspoint|-accesspoint|--accesspoint)
 			bApNetwork=1
 			shift
@@ -737,6 +782,9 @@ if [ $bCmd == 0 ]; then
 fi
 
 
+## json init
+_Init
+
 ## parameter processing
 if [ $bApNetwork == 1 ]; then
 	networkType="ap"
@@ -816,6 +864,11 @@ fi # command if else statement
 
 # check that network was found
 if [ $id == -1 ]; then
-	echo "> ERROR: specified ssid not in the database"
+	_Print "> ERROR: specified ssid not in the database" "error"
+	_SetError
 fi
+
+
+## json finish
+_Close
 
