@@ -16,6 +16,8 @@ bCmdDisable=0
 bCmdEnable=0
 bCmdRemove=0
 bCmdPriority=0
+bCmdList=0
+bCmdInfo=0
 
 
 #parameters
@@ -318,6 +320,92 @@ _SetNetworkPriority () {
 	fi
 }
 
+# output a JSON list of configured networks
+_JsonListUciNetworks () {
+	local count=0
+
+	# json setup      
+	json_init
+	
+	# create the results array
+	json_add_array results
+
+	# find the first network
+	local network=$(uci -q get wireless.\@wifi-iface[$count])
+
+	# loop through all configured networks
+	while [ "$network" == "wifi-iface" ]
+	do
+		# find the data
+		local ssidRd=$(uci -q get wireless.\@wifi-iface[$count].ssid)
+		local modeRd=$(uci -q get wireless.\@wifi-iface[$count].mode)
+		local encrRd=$(uci -q get wireless.\@wifi-iface[$count].encryption)
+		local passwordRd=$(uci -q get wireless.\@wifi-iface[$count].key)
+		
+		if [ "$encrRd" == "wep" ]; then
+			passwordRd=$(uci -q get wireless.\@wifi-iface[$count].key$passwordRd)
+		fi
+
+		# create and populate object for this network
+		json_add_object
+		json_add_string "ssid" "$ssidRd"
+		json_add_string "encryption" "$encrRd"
+		json_add_string "password" "$passwordRd"
+		json_add_string "mode" "$modeRd"
+		json_close_object
+
+		# continue the loop
+		count=$(($count + 1))
+		network=$(uci -q get wireless.\@wifi-iface[$count])
+	done
+
+	# finish the array
+	json_close_array
+
+	# print the json
+	json_dump
+}
+
+# output a JSON object of specified network
+#	$1 	- network id
+_JsonUciNetworkInfo () {
+	local id=$1
+
+	# json setup      
+	json_init
+
+	# find the first network
+	local network=$(uci -q get wireless.\@wifi-iface[$id])
+
+	# check the network and input parameter
+	if 	[ "$network" == "wifi-iface" ] &&
+		[ $id -ge 0 ]; 
+	then
+		# find the data
+		local ssidRd=$(uci -q get wireless.\@wifi-iface[$id].ssid)
+		local modeRd=$(uci -q get wireless.\@wifi-iface[$id].mode)
+		local encrRd=$(uci -q get wireless.\@wifi-iface[$id].encryption)
+		local passwordRd=$(uci -q get wireless.\@wifi-iface[$id].key)
+		
+		if [ "$encrRd" == "wep" ]; then
+			passwordRd=$(uci -q get wireless.\@wifi-iface[$id].key$passwordRd)
+		fi
+
+		# create and populate object for this network
+		json_add_boolean "success" 1
+		json_add_string "ssid" "$ssidRd"
+		json_add_string "encryption" "$encrRd"
+		json_add_string "password" "$passwordRd"
+		json_add_string "mode" "$modeRd"
+		
+	else
+		json_add_boolean "success" 0
+	fi
+
+	# print the json
+	json_dump
+}
+
 
 
 ################################
@@ -592,6 +680,16 @@ do
 			bCmdPriority=1
 			shift
 		;;
+		-list|list)
+			bCmd=1
+			bCmdList=1
+			shift
+		;;
+		-info|info)
+			bCmd=1
+			bCmdInfo=1
+			shift
+		;;
 		# parameters
 		-ssid|ssid)
 			shift
@@ -649,7 +747,7 @@ if [ $bApNetwork == 1 ]; then
 	then
 		ssid=$(_FindNetworkSsid)
 	fi
-	
+
 else
 	networkType="sta"
 	# check if network already exists in configuration
@@ -700,6 +798,19 @@ elif [ $bCmdPriority == 1 ]; then
 	if [ $id != -1 ]; then
 		_SetNetworkPriority $id $priorityMove
 	fi 
+
+elif [ $bCmdList == 1 ]; then
+	_JsonListUciNetworks
+
+	# remove error message
+	id=0
+
+elif [ $bCmdInfo == 1 ]; then
+	_JsonUciNetworkInfo $id
+
+	# remove error message (will be printed in json)
+	id=0
+	
 fi # command if else statement
 
 
