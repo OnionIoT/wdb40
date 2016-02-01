@@ -5,15 +5,25 @@ int 	bPrintToFile;
 
 void usage(const char* progName) 
 {
-	printf("WDB40: Making wireless connections easier\n\n");
+	printf("WDB40: Making wireless connections easier\n");
+	printf("\n");
 	printf("Valid arguments:\n");
-	printf("   init      - read network configuration, disable all client networks\n");
-	printf("   read      - read network configuration\n");
-	printf("   wait      - wait for network wireless device status to be up\n");
-	printf("   waitWwan  - wait for network wwan interface status to be up\\n");
-	printf("   scan      - scan for available networks, check for match against configured networks\n");
-	printf("   connect   - connect to a matched network\n");
-	printf("   disable   - disable all client networks, enable AP network\n");
+	printf("   init      - Read network configuration, disable all client networks\n");
+	printf("   read      - Read network configuration\n");
+	printf("   wait      - Wait for network wireless device status to be up\n");
+	printf("   waitWwan  - Wait for network wwan interface status to be up\\n");
+	printf("   scan      - Scan for available networks, check for match against configured networks\n");
+	printf("   connect   - Connect to a matched network\n");
+	printf("   disable   - Disable all client networks, enable AP network\n");
+	printf("\n");
+	printf("Valid options:\n");
+	printf("   -v        Increase output verbosity \n");
+	printf("   -q        Minimum verbosity \n");
+	printf("   -t        Define timeout in secondsfor 'wait' and 'waitWwan' stages \n");
+	printf("   -f        Force: make it mandatory to run wifi restart after setting up a network \n");
+	printf("   -n        Do not print program info to file in ram \n");
+
+	printf("\n");
 }
 
 // read the UCI network configuration

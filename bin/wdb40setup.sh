@@ -27,6 +27,59 @@ bApNetwork=0
 
 
 #############################
+##### Print Usage ###########
+usage () {
+	_Print "Functionality:"
+	_Print "	Configure WiFi networks on the Omega"
+	_Print ""
+
+	_Print "Interactive Usage:"
+	_Print "$0"
+	_Print "	Accepts user input"
+	_Print ""
+	_Print ""
+
+	_Print "Command Line Usage:"
+	_Print "$0 <command> <parameters>"
+	_Print ""
+	_Print "Available Commands:"
+	_Print "  add "
+	_Print "Functionality: Add a new WiFi network to the Omega's settings"
+	_Print "Usage: $0 add -ssid <ssid> -encr <encryption type> -password <password>"
+	_Print ""
+	_Print "  edit "
+	_Print "Functionality: Edit the information of a configured WiFi network"
+	_Print "Usage: $0 edit -ssid <ssid> -encr <encryption type> -password <password>"
+	_Print ""
+	_Print "  remove "
+	_Print "Functionality: Remove an existing WiFi network from the Omega's settings"
+	_Print "Usage: $0 remove -ssid <ssid>"
+	_Print ""
+	_Print "  priority "
+	_Print "Functionality: Move a WiFi network up or down in the priority list when attempting to connect"
+	_Print "Usage: $0 priority -ssid <ssid> -move <up|down>"
+	_Print "           up:     increase the priority"
+	_Print "           down:   decrease the priority"
+	_Print ""
+	_Print "  list "
+	_Print "Functionality: Display a JSON-formatted list of all configured networks"
+	_Print "Usage: $0 list"
+	_Print ""
+	_Print "  info "
+	_Print "Functionality: Display a JSON-formatted table of all info for specified network"
+	_Print "Usage: $0 list -ssid <ssid>"
+	_Print ""
+
+	_Print ""
+	_Print "Command Line Options:"
+	_Print "  -v      Increase output verbosity"
+	_Print "  -j      Set all output to JSON"
+	_Print "  -ap     Set any commands above to refer to an AP network"
+	_Print ""
+}
+
+
+#############################
 ##### General Functions #####
 # initialize the json
 _Init () {
@@ -756,9 +809,14 @@ do
 			priorityMove=$1
 			shift
 		;;
+		-h|--h|help|-help|--help)
+			usage
+			exit
+		;;
 	    *)
 			echo "ERROR: Invalid Argument: $1"
-			shift
+			usage
+			exit
 		;;
 	esac
 done

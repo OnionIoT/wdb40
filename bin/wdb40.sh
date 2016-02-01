@@ -155,6 +155,7 @@ do
 	    *)
 			echo "ERROR: Invalid Argument: $1"
 			shift
+			exit
 		;;
 	esac
 done
