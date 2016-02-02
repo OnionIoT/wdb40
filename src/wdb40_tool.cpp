@@ -144,6 +144,7 @@ int wdb40Tool::EnableMatchedNetwork(int bForce, int bPrintToFile)
 
 		//// attempt to connect to the first matched network
 		// check if network is already enabled
+		_Print(2, ">> Checking if network is already enabled...\n");
 		status 	= uci->GetWirelessSectionDisable( &(matchList.at(0)), currentDisabledStatus);
 
 		// enable the network
