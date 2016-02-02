@@ -298,57 +298,64 @@ int main(int argc, char **argv)
 	}
 
 	//// parse the arguments
-	if (strcmp("init", argv[0]) == 0) {
-		// prep for the scan
-		status 	= networkSetup(0);	// do not enable the AP
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+	while (argc > 0) {
+		if (strcmp("init", argv[0]) == 0) {
+			// prep for the scan
+			status 	= networkSetup(0);	// do not enable the AP
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("read", argv[0]) == 0) {
-		// read network config data
-		status 	= readNetworkConfig();
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("read", argv[0]) == 0) {
+			// read network config data
+			status 	= readNetworkConfig();
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("wait", argv[0]) == 0) {
-		// wait until wireless device is ready again
-		status 	= waitUntilReady(WDB40_NETWORK_WIRELESS, timeout);
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("wait", argv[0]) == 0) {
+			// wait until wireless device is ready again
+			status 	= waitUntilReady(WDB40_NETWORK_WIRELESS, timeout);
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("waitWwan", argv[0]) == 0) {
-		// wait until network intf wwan (sta client connection) is ready again
-		status 	= waitUntilReady(WDB40_NETWORK_INTF_WWAN, timeout);
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("waitWwan", argv[0]) == 0) {
+			// wait until network intf wwan (sta client connection) is ready again
+			status 	= waitUntilReady(WDB40_NETWORK_INTF_WWAN, timeout);
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("scan", argv[0]) == 0) {
-		// perform the scan
-		status 	= scanNetworks();
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("scan", argv[0]) == 0) {
+			// perform the scan
+			status 	= scanNetworks();
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("connect", argv[0]) == 0) {
-		// connect to a matched network
-		status 	= connectAttempt(bForce);
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("connect", argv[0]) == 0) {
+			// connect to a matched network
+			status 	= connectAttempt(bForce);
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else if (strcmp("disable", argv[0]) == 0) {
-		// Disable all client networks, enable the AP
-		status 	= networkSetup(1);
-		if (status != EXIT_SUCCESS) {
-			printf("Returned ERROR!\n", status);
+		else if (strcmp("disable", argv[0]) == 0) {
+			// Disable all client networks, enable the AP
+			status 	= networkSetup(1);
+			if (status != EXIT_SUCCESS) {
+				printf("Returned ERROR!\n", status);
+			}
 		}
-	}
-	else {
-		usage(progname);
+		else {
+			usage(progname);
+			break;
+		}
+
+		// advance the argument pointer
+		argc--;
+		argv++;
 	}
 
 
