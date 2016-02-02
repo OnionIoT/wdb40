@@ -113,7 +113,7 @@ int uciIntf::ReadWirelessConfig()
 // change the disabled option in a wireless section
 int uciIntf::GetWirelessSectionDisable(networkInfo *network, int &bDisable)
 {
-	int 			status;
+	int 			status 	= EXIT_FAILURE;
 	std::string 	configName;
 
 	char 	*wifiSection 	= new char[WDB40_MAX_STRING_SIZE];
@@ -135,17 +135,22 @@ int uciIntf::GetWirelessSectionDisable(networkInfo *network, int &bDisable)
 
 	// lookup the wireless section
 	_Print(2, ">> Reading '%s' disabled state... ", wifiSection);
-	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) != UCI_OK ) {
-		status 	= EXIT_FAILURE;
+	if ( uci_lookup_ptr(ctx, &sectionPtr, wifiSection, true) == UCI_OK ) {
+		// get the disable option
+		if (sectionPtr.target == UCI_TYPE_OPTION) {
+			bDisable	= _ParseDisabled( sectionPtr.o->v.string );
+			_Print(2, "State is '%d'\n", bDisable);
+			status 	= EXIT_SUCCESS;
+		}
+	}
+	else {
+		// disabled option doesn't exist, not disabled
+		bDisable 	= 0;
+		_Print(2, "Disable option does not exist: State is '%d'\n", bDisable);
+		status 		= EXIT_FAILURE;
 	}
 
-	// get the disable option
-	if (sectionPtr.target == UCI_TYPE_OPTION) {
-		bDisable	= _ParseDisabled( sectionPtr.o->v.string );
-		_Print(2, "State is '%d'\n", bDisable);
-
-	}
-
+	
 	// clean-up
 	delete 	wifiSection;
 
