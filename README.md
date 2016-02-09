@@ -5,12 +5,18 @@ Wireless Network Manager
 
 Making moving between networks super easy!
 
-The wdb40 tool consists of two parts:
+The wdb40 tool consists of several parts:
 * `wdb40tool`, a C++ binary
 * `wdb40`, a bash script
+* `wdb40setup`, a script to manage saved networks on the Omega
 
-The `wdb40tool` does all of the heavy lifting in changing configurations, reading info, and interacting with the hardware. The `wdb40` script runs chunks of the C++ binary in sequences. This is the program with which users will interact.
-Both are described below.
+The `wdb40tool` does all of the heavy lifting in changing configurations, reading info, and interacting with the hardware. 
+
+The `wdb40` script runs chunks of the C++ binary in sequences. This is the program with which users will interact.
+
+The `wdb40setup` script interacts with `/etc/config/wireless` to add, edit, or remove configured networks to the Omega.
+
+All are described below.
 
 
 
@@ -186,3 +192,65 @@ If the final command, `wdb40tool -t 20 waitWwan`, in both the Regular and Boot S
 * Attempt the connection again:
   * `wdb40tool connect`
   * `wdb40tool -t 20 waitWwan`
+
+
+
+# wdb40setup Script
+
+This script modifies the contents of the `/etc/config/wireless` file that contains all of the information for configured wifi networks on the Omega.
+
+## Actions
+
+### Add WiFi Network
+Add a new WiFi network to the Omega's settings
+```
+wdb40setup add -ssid <ssid> -encr <encryption type> -password <password>
+```
+
+### Edit a Network
+Edit the information of a configured WiFi network
+```
+wdb40setup edit -ssid <ssid> -encr <encryption type> -password <password>
+```
+
+### Remove a Network
+Remove an existing WiFi network from the Omega's settings
+```
+wdb40setup remove -ssid <ssid>
+```
+
+### Change a Network's priority
+Move a WiFi network up or down in the priority list when attempting to connect
+```
+wdb40setup priority -ssid <ssid> -move <up|down>
+```
+
+* `up`:     increase the priority
+* `down`:   decrease the priority
+
+### List All Configured Networks
+Display a JSON-formatted list of all configured networks
+```
+wdb40setup list
+```
+
+### Display a Specific Network's Information
+Display a JSON-formatted table of all info for specified network
+```
+wdb40setup list -ssid <ssid>
+```
+
+## Additional Info
+
+### Accepted Encryption Types
+
+The following are acceptable encryption type inputs for the commands above:
+* wpa2
+* wpa
+* wep
+* none
+
+### Setting up an Access Point
+
+Any of the commands above can be modified for an AP by adding the `-ap` option
+
