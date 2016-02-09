@@ -2,7 +2,18 @@
 Wireless Network Manager
 
 ![wd40 can](http://wd40.com/img/wd-40-smart-straw-voc-12oz_straw_up_right.png)
+
 Making moving between networks super easy!
+
+The wdb40 tool consists of two parts:
+* `wdb40tool`, a C++ binary
+* `wdb40`, a bash script
+
+The `wdb40tool` does all of the heavy lifting in changing configurations, reading info, and interacting with the hardware. The `wdb40` script runs chunks of the C++ binary in sequences. This is the program with which users will interact.
+Both are described below.
+
+
+
 
 # wdb40tool
 
@@ -100,3 +111,78 @@ wdb40tool [-f] connect
 
 Uses `libuci` to disable all client networks and enable the AP network, if any.
 
+
+
+
+# wdb40 Script
+
+Unfortunately, wdb40tool, the C++ cannot do everything itself, the `wdb40` script was written to accomodate this issue.
+
+## Use
+
+The script runs two different sequences:
+
+
+### The Boot Sequence
+
+Meant to run when the Omega boots to ensure it either:
+* Connects to an available network that is configured in `/etc/config/wireless`
+* Disables all STA connections and enables the AP so the Omega can be configured
+
+**Command**
+The wdb40 installation will enable this sequence being run at boot (by adding a `/etc/init.d/wdb40` file).
+
+To run the sequence manually:
+```
+wdb40 -boot
+```
+
+**Sequence:**
+
+* `wdb40tool -t 60 wait`
+  * Wait for wireless device to be up (60 second timeout)
+* `wdb40tool init`
+  * Read configured networks, disable all STA networks, reset the wifi adapter
+* `wdb40tool wait`
+  * Wait for wireless device to be up (default timeout)
+* `wdb40tool scan`
+  * Scan available networks, check against configured networks for a match
+* `wdb40tool -f connect`
+  * Enable the matched network, forcing the wifi adapter to restart
+* `wdb40tool -t 20 waitWwan`
+  * Ensure connection to the matched network is successful (20 second timeout)
+
+
+
+### The Regular Sequence
+
+Meant to be run by the user when the available wifi networks might have changed; the Omega was moved to another location, a wifi network went down, etc.
+
+**Command**
+```
+wdb40
+```
+
+**Sequence:**
+
+* `wdb40tool wait`
+  * Ensure the wireless device is up
+* `wdb40tool read`
+  * Read the configured networks
+* `wdb40tool scan`
+  * Scan for available networks, check against configured networks for a match
+* `wdb40tool connect`
+  * Enable the matched network
+* `wdb40tool -t 20 waitWwan`
+  * Ensure connection to the matched network is successful (20 second timeout)
+
+
+### Connection Failure
+
+If the final command, `wdb40tool -t 20 waitWwan`, in both the Regular and Boot Sequences times out meaning the connection was unsuccessful, the following is done:
+
+* `wdb40tool -t 20 disable`
+  * Disable all client wifi connections and enable the Omega's AP network
+* Attempt the connection again:
+  * `wdb40tool connect`
+  * `wdb40tool -t 20 waitWwan`
