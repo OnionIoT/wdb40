@@ -67,7 +67,7 @@ usage () {
 	_Print ""
 	_Print "  info "
 	_Print "Functionality: Display a JSON-formatted table of all info for specified network"
-	_Print "Usage: $0 list -ssid <ssid>"
+	_Print "Usage: $0 info -ssid <ssid>"
 	_Print ""
 
 	_Print ""

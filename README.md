@@ -237,7 +237,7 @@ wdb40setup list
 ### Display a Specific Network's Information
 Display a JSON-formatted table of all info for specified network
 ```
-wdb40setup list -ssid <ssid>
+wdb40setup info -ssid <ssid>
 ```
 
 ## Additional Info
