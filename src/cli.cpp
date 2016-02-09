@@ -19,7 +19,7 @@ void usage(const char* progName)
 	printf("Valid options:\n");
 	printf("   -v        Increase output verbosity \n");
 	printf("   -q        Minimum verbosity \n");
-	printf("   -t        Define timeout in secondsfor 'wait' and 'waitWwan' stages \n");
+	printf("   -t        Define timeout in seconds for 'wait' and 'waitWwan' stages \n");
 	printf("   -f        Force: make it mandatory to run wifi restart after setting up a network \n");
 	printf("   -n        Do not print program info to file in ram \n");
 
