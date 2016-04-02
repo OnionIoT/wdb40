@@ -8,6 +8,7 @@ INITIAL_TIMEOUT="60"
 CONNECTION_TIMEOUT="20"
 SHORT_TIMEOUT="2"
 
+bUsage=0
 bBoot=0
 bVerbose=0
 
@@ -20,6 +21,26 @@ _Print () {
 	if [ $bVerbose == 1 ]; then
 		echo $1
 	fi
+}
+
+# print usage information
+Usage () {
+	_Print "WDB40: Omega Network Manager"
+	_Print " Attempts to automatically connect to any configured networks"
+	_Print ""
+	_Print "This will always run at boot"
+	_Print ""
+	_Print "Afterwards, it can be run manually if the networks around you have changed"
+	_Print " Run with no arguments and the following will be performed:"
+	_Print " - Scan for wifi networks"
+	_Print " - Check available networks from scan against configured networks"
+	_Print " - Attempt to connect to any available configured networks"
+	_Print " - If the connection is not successful:"
+	_Print "   - Try to connect to any other available configured networks"
+	_Print "   - If there are no other available configured networks, ensures the Omega's AP is enabled"
+	_Print ""
+	_Print "Use 'wifisetup' to configure your network settings"
+	_Print ""
 }
 
 # function to connect to the first network in the match networks file
@@ -148,8 +169,13 @@ do
 			bBoot=1
 			shift
 		;;
-		-v|--v|-verbose|verbose)
+		-v|--v|verbose|-verbose|--verbose)
 			bVerbose=1
+			shift
+		;;
+		-h|--h|help|-help|--help)
+			bVerbose=1
+			bUsage=1
 			shift
 		;;
 	    *)
@@ -161,6 +187,10 @@ do
 done
 
 
+if [ $bUsage == 1 ]; then
+	Usage 
+	exit
+fi
 
 
 ### sequence to run on boot

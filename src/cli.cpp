@@ -11,7 +11,7 @@ void usage(const char* progName)
 	printf("   init      - Read network configuration, disable all client networks\n");
 	printf("   read      - Read network configuration\n");
 	printf("   wait      - Wait for network wireless device status to be up\n");
-	printf("   waitWwan  - Wait for network wwan interface status to be up\\n");
+	printf("   waitWwan  - Wait for network wwan interface status to be up\n");
 	printf("   scan      - Scan for available networks, check for match against configured networks\n");
 	printf("   connect   - Connect to a matched network\n");
 	printf("   disable   - Disable all client networks, enable AP network\n");

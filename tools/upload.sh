@@ -20,7 +20,7 @@ eval "$cmd"
 
 ##
 localPath="bin/wdb40setup.sh"
-remotePath="/usr/bin/wdb40setup"
+remotePath="/usr/bin/wifisetup"
 
 cmd="rsync -va --progress $localPath root@omega-$1.local:$remotePath"
 echo "$cmd"
@@ -34,3 +34,4 @@ remotePath="/etc/init.d/wdb40d"
 cmd="rsync -va --progress $localPath root@omega-$1.local:$remotePath"
 echo "$cmd"
 eval "$cmd"
+

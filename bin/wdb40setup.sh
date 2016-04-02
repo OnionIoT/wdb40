@@ -76,6 +76,10 @@ usage () {
 	_Print "  -j      Set all output to JSON"
 	_Print "  -ap     Set any commands above to refer to an AP network"
 	_Print ""
+
+	_Print ""
+	_Print "Run 'wdb40' to make network configuration changes take effect"
+	_Print ""
 }
 
 
@@ -458,7 +462,9 @@ _JsonListUciNetworks () {
 	json_close_array
 
 	# print the json
-	json_dump
+	if [ $bJson == 0 ]; then
+		json_dump
+	fi
 }
 
 # output a JSON object of specified network
