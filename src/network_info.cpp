@@ -326,27 +326,26 @@ void networkInfo::FilePrintBasic(std::ofstream& file)
 
 
 	if (file.is_open()) {
-			file << ssid << NETWORK_INFO_DELIMITER << encryptionType << "\n";
+			//file << ssid << NETWORK_INFO_DELIMITER << encryptionType << "\n";
+			file << ssid << "\n";
+			file << encryptionType << "\n";
 	}
 }
 
-int networkInfo::ParseNetworkFileLine (char* input, std::string &rdSsid, int &rdEncryptionType)
+int networkInfo::ParseNetworkFileLine (char* input1, char* input2, std::string &rdSsid, int &rdEncryptionType)
 {
 	int 	status;
-	char 	pattern[WDB40_MAX_STRING_SIZE];
-	char 	rdSsidChar[WDB40_MAX_STRING_SIZE];
-
-	//printf(">> inside static function\n");
-
-	// determine the pattern
-	sprintf(pattern, "%%s%s%%d", NETWORK_INFO_DELIMITER);
 
 	// read the input line
-	status 	= sscanf(input, pattern, rdSsidChar, &rdEncryptionType);
+	//status 	= sscanf(input1, pattern, rdSsidChar, &rdEncryptionType);
 	//printf("DBG:: sscanf: pattern is '%s', returned '%d', ssid = '%s', encr = '%d'\n", pattern, status, rdSsidChar, rdEncryptionType );
 
-	if (status == 2) {
-		rdSsid 	= std::string(rdSsidChar);
+	// read the encryption type and convert to an integer
+	status 	= sscanf(input2, "%d", &rdEncryptionType);
+	printf("DBG:: input1 is '%s', input2 is '%s', encrType is %d\n", input1, input2, rdEncryptionType);
+
+	if (status == 1) {
+		rdSsid 	= std::string(input1);
 		status 	= EXIT_SUCCESS;
 	}
 	else {

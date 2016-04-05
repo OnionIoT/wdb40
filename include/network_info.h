@@ -13,8 +13,6 @@
 
 #define NETWORK_INFO_DEFAULT_NONE		"default-none"
 
-#define NETWORK_INFO_DELIMITER 			" :::: "
-
 
 // class to Store all info related to a network
 class networkInfo : public Module {
@@ -35,7 +33,7 @@ public:
 	void 	Reset					();
 
 	// static function
-	static int 	ParseNetworkFileLine 	(char* input, std::string &rdSsid, int &rdEncryptionType);
+	static int 	ParseNetworkFileLine 	(char* input1, char* input2, std::string &rdSsid, int &rdEncryptionType);
 
 
 	// set functions

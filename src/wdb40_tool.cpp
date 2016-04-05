@@ -450,9 +450,10 @@ void wdb40Tool::_FilePrintNetworkList(std::vector<networkInfo> &networkList, std
 
 int wdb40Tool::_FileReadNetworkList(std::vector<networkInfo> &networkList, std::string filename, std::string path)
 {
-	int 	status;
+	int 	status 		= EXIT_FAILURE;
 	int 	encrType;
-	char 	line[WDB40_MAX_STRING_SIZE];
+	char 	line1[WDB40_MAX_STRING_SIZE];
+	char 	line2[WDB40_MAX_STRING_SIZE];
 	char 	filePath[WDB40_MAX_STRING_SIZE];
 
 	std::string 	ssid;
@@ -462,13 +463,17 @@ int wdb40Tool::_FileReadNetworkList(std::vector<networkInfo> &networkList, std::
 	sprintf(filePath, "%s/%s", path.c_str(), filename.c_str() );
 	file.open( filePath );
 
-	// print each network in the vector
+	// parse each network from the file
 	if (file.is_open() ) {
 		_Print(2, ">> Successfully opened file '%s'\n", filePath );
 		// file exists
-		while (file.getline(line, WDB40_MAX_STRING_SIZE) ) {
-			// parse the line
-			status 	= networkInfo::ParseNetworkFileLine (line, ssid, encrType);
+		while( 	file.getline(line1, WDB40_MAX_STRING_SIZE) &&
+				file.getline(line2, WDB40_MAX_STRING_SIZE)) 
+		{
+			//_Print(3, "parsing! '%s' and '%s'\n", line1, line2);
+			// parse the read lines
+			status 	= networkInfo::ParseNetworkFileLine (line1, line2, ssid, encrType);
+
 			if (status == EXIT_SUCCESS) {
 				//_Print(1, "read: ssid: '%s', encryption type: '%d'\n", ssid.c_str(), encrType);
 				_AddNetwork(networkList, ssid, encrType);
