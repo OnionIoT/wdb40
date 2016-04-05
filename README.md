@@ -195,7 +195,7 @@ If the final command, `wdb40tool -t 20 waitWwan`, in both the Regular and Boot S
 
 
 
-# wdb40setup Script
+# wifisetup Script
 
 This script modifies the contents of the `/etc/config/wireless` file that contains all of the information for configured wifi networks on the Omega.
 
@@ -204,25 +204,25 @@ This script modifies the contents of the `/etc/config/wireless` file that contai
 ### Add WiFi Network
 Add a new WiFi network to the Omega's settings
 ```
-wdb40setup add -ssid <ssid> -encr <encryption type> -password <password>
+wifisetup add -ssid <ssid> -encr <encryption type> -password <password>
 ```
 
 ### Edit a Network
 Edit the information of a configured WiFi network
 ```
-wdb40setup edit -ssid <ssid> -encr <encryption type> -password <password>
+wifisetup edit -ssid <ssid> -encr <encryption type> -password <password>
 ```
 
 ### Remove a Network
 Remove an existing WiFi network from the Omega's settings
 ```
-wdb40setup remove -ssid <ssid>
+wifisetup remove -ssid <ssid>
 ```
 
 ### Change a Network's priority
 Move a WiFi network up or down in the priority list when attempting to connect
 ```
-wdb40setup priority -ssid <ssid> -move <up|down>
+wifisetup priority -ssid <ssid> -move <up|down>
 ```
 
 * `up`:     increase the priority
@@ -231,13 +231,13 @@ wdb40setup priority -ssid <ssid> -move <up|down>
 ### List All Configured Networks
 Display a JSON-formatted list of all configured networks
 ```
-wdb40setup list
+wifisetup list
 ```
 
 ### Display a Specific Network's Information
 Display a JSON-formatted table of all info for specified network
 ```
-wdb40setup info -ssid <ssid>
+wifisetup info -ssid <ssid>
 ```
 
 ## Additional Info
