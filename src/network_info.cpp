@@ -334,10 +334,9 @@ void networkInfo::FilePrintBasic(std::ofstream& file)
 int networkInfo::ParseNetworkFileLine (char* input1, char* input2, std::string &rdSsid, int &rdEncryptionType)
 {
 	int 	status;
-	
+
 	// read the encryption type and convert to an integer
 	status 	= sscanf(input2, "%d", &rdEncryptionType);
-	printf("DBG:: input1 is '%s', input2 is '%s', encrType is %d\n", input1, input2, rdEncryptionType);
 
 	if (status == 1) {
 		rdSsid 	= std::string(input1);
