@@ -324,9 +324,8 @@ void networkInfo::FilePrintBasic(std::ofstream& file)
 {
 	std::string 	encrType, encrSubtype;
 
-
+	// write ssid and then encryption type on the next line 
 	if (file.is_open()) {
-			//file << ssid << NETWORK_INFO_DELIMITER << encryptionType << "\n";
 			file << ssid << "\n";
 			file << encryptionType << "\n";
 	}
@@ -335,11 +334,7 @@ void networkInfo::FilePrintBasic(std::ofstream& file)
 int networkInfo::ParseNetworkFileLine (char* input1, char* input2, std::string &rdSsid, int &rdEncryptionType)
 {
 	int 	status;
-
-	// read the input line
-	//status 	= sscanf(input1, pattern, rdSsidChar, &rdEncryptionType);
-	//printf("DBG:: sscanf: pattern is '%s', returned '%d', ssid = '%s', encr = '%d'\n", pattern, status, rdSsidChar, rdEncryptionType );
-
+	
 	// read the encryption type and convert to an integer
 	status 	= sscanf(input2, "%d", &rdEncryptionType);
 	printf("DBG:: input1 is '%s', input2 is '%s', encrType is %d\n", input1, input2, rdEncryptionType);
