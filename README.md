@@ -8,13 +8,13 @@ Making moving between networks super easy!
 The wdb40 tool consists of several parts:
 * `wdb40tool`, a C++ binary
 * `wdb40`, a bash script
-* `wdb40setup`, a script to manage saved networks on the Omega
+* `wifisetup`, a script to manage saved networks on the Omega
 
 The `wdb40tool` does all of the heavy lifting in changing configurations, reading info, and interacting with the hardware. 
 
 The `wdb40` script runs chunks of the C++ binary in sequences. This is the program with which users will interact.
 
-The `wdb40setup` script interacts with `/etc/config/wireless` to add, edit, or remove configured networks to the Omega.
+The `wifisetup` script interacts with `/etc/config/wireless` to add, edit, or remove configured networks to the Omega.
 
 All are described below.
 
