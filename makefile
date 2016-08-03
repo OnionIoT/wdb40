@@ -27,6 +27,10 @@ OBJECTS += $(BUILDDIR)/blobmsg_intf.o
 CXXFLAGS := -g # -Wall
 CFLAGS := -g # -Wall
 
+override CXXFLAGS += -D 'DEVICE_TYPE="$(DEVICE_TYPE)"'
+override CFLAGS += -D 'DEVICE_TYPE="$(DEVICE_TYPE)"'
+
+
 INC := $(shell find $(INCDIR) -maxdepth 1 -type d -exec echo -I {}  \;)
 #LIB := $(LIB) -L$(LIBDIR) -loniondebug -lonioni2c
 

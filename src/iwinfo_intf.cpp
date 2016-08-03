@@ -1,5 +1,23 @@
 #include <iwinfo_intf.h>
 
+iwInfoIntf::iwInfoIntf() 
+{
+	Reset();
+
+	// initialize the device name
+	wirelessDevice 	= new char[WDB40_MAX_STRING_SIZE];
+
+	// check which device this is being compiled for
+	if (strcmp(DEVICE_TYPE, WDB40_DEVICE_TYPE_RAMIPS) == 0) {
+		strncpy(wirelessDevice, WDB40_IWINFO_DEVICE_NAME_RAMIPS, strlen(WDB40_IWINFO_DEVICE_NAME_RAMIPS) );
+	} else {
+		strncpy(wirelessDevice, WDB40_IWINFO_DEVICE_NAME_AR71XX, strlen(WDB40_IWINFO_DEVICE_NAME_AR71XX) );
+	}
+	
+	// verbosity setting
+	SetVerbosity(1);
+}
+
 iwInfoIntf::iwInfoIntf(std::string device) 
 {
 	Reset();

@@ -2,7 +2,13 @@
 #define _WDB40_TYPES_H_
 
 
-#define WDB40_MAX_STRING_SIZE			256
+#define WDB40_MAX_STRING_SIZE				256
+
+#define WDB40_DEVICE_TYPE_AR71XX			"ar71xx"
+#define WDB40_DEVICE_TYPE_RAMIPS			"ramips"
+
+#define WDB40_IWINFO_DEVICE_NAME_AR71XX		"radio0"
+#define WDB40_IWINFO_DEVICE_NAME_RAMIPS		"ra0"
 
 
 // status types to check

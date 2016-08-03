@@ -14,15 +14,12 @@ extern "C" {
 #include <vector>
 
 
-//#define IWINFO_DEVICE_NAME				"wlan0"
-#define IWINFO_DEVICE_NAME				"radio0"
-
-
 
 // class to perform all iwinfo operations
 class iwInfoIntf : public Module {
 public:
-	iwInfoIntf(std::string device = IWINFO_DEVICE_NAME);
+	iwInfoIntf();
+	iwInfoIntf(std::string device);
 	iwInfoIntf(char* device);
 	~iwInfoIntf(void);
 
