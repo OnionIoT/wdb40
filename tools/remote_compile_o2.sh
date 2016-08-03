@@ -3,7 +3,7 @@
 ## define the remote server 
 pkg="wdb40"
 server="lazar@build.onion.io"
-remotePath="/home/lazar/OpenWRT-Buildroot/openwrt/dl"
+remotePath="/home/lazar/OpenWRT-Buildroot-Omega2/openwrt/dl"
 
 ## upload project to openwrt2.onion.io 
 localPath="../$pkg"
