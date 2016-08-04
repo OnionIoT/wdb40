@@ -269,25 +269,30 @@ _AddWifiUciSection () {
 		# use UCI to set the network to client mode and wwan
 		uci set wireless.@wifi-iface[$id].mode="sta"
 		uci set wireless.@wifi-iface[$id].network="wwan"
+		uci set wireless.@wifi-iface[$id].disabled="1"
+
+		if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
+		then
+			#echo "Setting ifname for Omega2"
+			uci set wireless.@wifi-iface[$id].ifname="apcli0"
+		fi
 	elif [ "$networkType" = "ap" ]; then
 		_Print "> Setting up $ssid Access Point as network $id" "output"
 		# use UCI to set the network to access-point mode and wlan
 		uci set wireless.@wifi-iface[$id].mode="ap"
 		uci set wireless.@wifi-iface[$id].network="wlan"
+
+		if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
+		then
+			#echo "Setting ifname for Omega2"
+			uci set wireless.@wifi-iface[$id].ifname="ra0"
+		fi
 	fi 
 
 	# use UCI to set the ssid, encryption, and disabled options
 	uci set wireless.@wifi-iface[$id].ssid="$ssid"
 	uci set wireless.@wifi-iface[$id].encryption="$auth"
-	uci set wireless.@wifi-iface[$id].disabled="0"
 	
-	deviceType=$(GetDeviceType)
-	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
-	then
-		#echo "Setting ifname for Omega2"
-		uci set wireless.@wifi-iface[$id].ifname="apcli0"
-	fi
-
 	# set the network key based on the authentication
 	case "$auth" in
 		psk|psk2)
@@ -311,7 +316,13 @@ _AddWifiUciSection () {
 	# commit the changes
 	if [ $commit == 1 ]; then
 		$(uci commit wireless)
-		/etc/init.d/network reload
+	fi
+
+	# restart wifi intf if adding AP network
+	if 	[ "$networkType" = "ap" ] &&
+		[ $bNew == 1 ]; 
+	then
+		/etc/init.d/network restart
 	fi
 }
 
@@ -641,25 +652,17 @@ _UserInputReadNetworkAuth () {
 
 # scan wifi networks, display for user, allow them to pick one
 _UserInputScanWifi () {
+	local RESP=""
 	# run the scan command and get the response
-	deviceType=$(GetDeviceType)
-
 	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA" ] 
 	then
-		echo "Device is Omega"	
 		#$(ifconfig wlan0 up)
-		local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+		RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
 	elif [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ]
 	then
-		echo "Device is Omega2"
 		# Need to run this command, for some reason it allows you to see al thhe networks
-		#$(ifconfig apcli0 up)
-		local RESP=$(ubus call iwinfo scan '{"device":"apcli0"}')
+		RESP=$(ubus call iwinfo scan '{"device":"apcli0"}')
 	fi
-
-	# echo $(GetDeviceType)
-
-	# local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
 	
 	# read the json response
 	json_load "$RESP"
@@ -956,6 +959,17 @@ fi # command if else statement
 if [ $id == -1 ]; then
 	_Print "> ERROR: specified ssid not in the database" "error"
 	_SetError
+fi
+
+# scan and connect to available networks
+if 	[ $bCmdAdd == 1 ] || 
+	[ $bCmdDisable == 1 ] ||
+	[ $bCmdEnable == 1 ] ||
+	[ $bCmdRemove == 1 ] ||
+	[ $bCmdPriority == 1 ];
+then
+	_Print "> Restarting wifi interface for changes to take effect" "status"
+	wdb40 &
 fi
 
 
