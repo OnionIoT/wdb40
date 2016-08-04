@@ -3,7 +3,8 @@
 ## script to setup uci wireless configuration for use with wdb40 utility
 
 . /usr/share/libubox/jshn.sh
-
+# include the Onion sh lib
+. /usr/lib/onion/lib.sh
 
 ### global variables
 # options
@@ -278,7 +279,14 @@ _AddWifiUciSection () {
 	# use UCI to set the ssid, encryption, and disabled options
 	uci set wireless.@wifi-iface[$id].ssid="$ssid"
 	uci set wireless.@wifi-iface[$id].encryption="$auth"
-	uci set wireless.@wifi-iface[$id].disabled="1"
+	uci set wireless.@wifi-iface[$id].disabled="0"
+	
+	deviceType=$(GetDeviceType)
+	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
+	then
+		#echo "Setting ifname for Omega2"
+		uci set wireless.@wifi-iface[$id].ifname="apcli0"
+	fi
 
 	# set the network key based on the authentication
 	case "$auth" in
@@ -302,7 +310,8 @@ _AddWifiUciSection () {
 
 	# commit the changes
 	if [ $commit == 1 ]; then
-		uci commit wireless
+		$(uci commit wireless)
+		/etc/init.d/network reload
 	fi
 }
 
@@ -633,7 +642,24 @@ _UserInputReadNetworkAuth () {
 # scan wifi networks, display for user, allow them to pick one
 _UserInputScanWifi () {
 	# run the scan command and get the response
-	local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+	deviceType=$(GetDeviceType)
+
+	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA" ] 
+	then
+		echo "Device is Omega"	
+		#$(ifconfig wlan0 up)
+		local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+	elif [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ]
+	then
+		echo "Device is Omega2"
+		# Need to run this command, for some reason it allows you to see al thhe networks
+		#$(ifconfig apcli0 up)
+		local RESP=$(ubus call iwinfo scan '{"device":"apcli0"}')
+	fi
+
+	# echo $(GetDeviceType)
+
+	# local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
 	
 	# read the json response
 	json_load "$RESP"
