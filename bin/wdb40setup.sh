@@ -279,7 +279,7 @@ _AddWifiUciSection () {
 	# use UCI to set the ssid, encryption, and disabled options
 	uci set wireless.@wifi-iface[$id].ssid="$ssid"
 	uci set wireless.@wifi-iface[$id].encryption="$auth"
-	uci set wireless.@wifi-iface[$id].disabled="0"
+	uci set wireless.@wifi-iface[$id].disabled="1"
 	
 	deviceType=$(GetDeviceType)
 	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
