@@ -271,22 +271,24 @@ _AddWifiUciSection () {
 		uci set wireless.@wifi-iface[$id].network="wwan"
 		uci set wireless.@wifi-iface[$id].disabled="1"
 
-		if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
-		then
-			#echo "Setting ifname for Omega2"
-			uci set wireless.@wifi-iface[$id].ifname="apcli0"
-		fi
+		# TO DO: once firmware is stable, potentially remove this commented out code
+		# if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
+		# then
+		# 	#echo "Setting ifname for Omega2"
+		# 	uci set wireless.@wifi-iface[$id].ifname="apcli0"
+		# fi
 	elif [ "$networkType" = "ap" ]; then
 		_Print "> Setting up $ssid Access Point as network $id" "output"
 		# use UCI to set the network to access-point mode and wlan
 		uci set wireless.@wifi-iface[$id].mode="ap"
 		uci set wireless.@wifi-iface[$id].network="wlan"
 
-		if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
-		then
-			#echo "Setting ifname for Omega2"
-			uci set wireless.@wifi-iface[$id].ifname="ra0"
-		fi
+		# TO DO: once firmware is stable, potentially remove this commented out code
+		# if [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ];
+		# then
+		# 	#echo "Setting ifname for Omega2"
+		# 	uci set wireless.@wifi-iface[$id].ifname="ra0"
+		# fi
 	fi 
 
 	# use UCI to set the ssid, encryption, and disabled options
@@ -652,17 +654,19 @@ _UserInputReadNetworkAuth () {
 
 # scan wifi networks, display for user, allow them to pick one
 _UserInputScanWifi () {
-	local RESP=""
 	# run the scan command and get the response
-	if [ "$(GetDeviceType)" == "$DEVICE_OMEGA" ] 
-	then
-		#$(ifconfig wlan0 up)
-		RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
-	elif [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ]
-	then
-		# Need to run this command, for some reason it allows you to see al thhe networks
-		RESP=$(ubus call iwinfo scan '{"device":"apcli0"}')
-	fi
+	local RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+
+	# TO DO: once firmware is stable, potentially remove this commented out code	
+	# if [ "$(GetDeviceType)" == "$DEVICE_OMEGA" ] 
+	# then
+	# 	#$(ifconfig wlan0 up)
+	# 	RESP=$(ubus call iwinfo scan '{"device":"wlan0"}')
+	# elif [ "$(GetDeviceType)" == "$DEVICE_OMEGA2" ]
+	# then
+	# 	# Need to run this command, for some reason it allows you to see al thhe networks
+	# 	RESP=$(ubus call iwinfo scan '{"device":"apcli0"}')
+	# fi
 	
 	# read the json response
 	json_load "$RESP"
